@@ -102,7 +102,7 @@ interface ShoppingList {
   store: string | null;
   createdAt: string;
   finishedAt: string | null;
-  total: number;      // centavos
+  total: number; // centavos
   budget: number | null;
 }
 
@@ -110,10 +110,10 @@ interface ListItem {
   id: number;
   listId: number;
   name: string;
-  unitPrice: number;  // centavos
+  unitPrice: number; // centavos
   quantity: number;
   unit: Unit;
-  subtotal: number;   // centavos
+  subtotal: number; // centavos
   photoUri: string | null;
   createdAt: string;
 }
@@ -126,15 +126,17 @@ interface ListItem {
 ```ts
 const unitSchema = z.enum(['un', 'kg']);
 
-const listItemInputSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  unitPrice: z.number().int().positive().max(9_999_999),   // até R$ 99.999,99 — teto contra lixo de OCR
-  quantity: z.number().positive(),
-  unit: unitSchema,
-}).refine(
-  (v) => v.unit === 'kg' || Number.isInteger(v.quantity),
-  { message: 'Quantidade deve ser inteira para itens por unidade', path: ['quantity'] }
-);
+const listItemInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    unitPrice: z.number().int().positive().max(9_999_999), // até R$ 99.999,99 — teto contra lixo de OCR
+    quantity: z.number().positive(),
+    unit: unitSchema,
+  })
+  .refine((v) => v.unit === 'kg' || Number.isInteger(v.quantity), {
+    message: 'Quantidade deve ser inteira para itens por unidade',
+    path: ['quantity'],
+  });
 
 const shoppingListInputSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -156,7 +158,7 @@ interface OcrBlock {
 interface ParsedLabel {
   name: string | null;
   priceCents: number | null;
-  unit: Unit;         // 'kg' se detectado (RF-22), senão 'un'
+  unit: Unit; // 'kg' se detectado (RF-22), senão 'un'
   confident: boolean; // false quando name e priceCents são ambos null — dispara RF-25
 }
 
@@ -168,46 +170,48 @@ function parseLabel(blocks: OcrBlock[]): ParsedLabel;
 ### `src/lib/money.ts` — RF-02, RF-07, RF-45–47
 
 ```ts
-function multiplyCents(unitPriceCents: number, quantity: number): number;  // arredondamento — ADR-02
+function multiplyCents(unitPriceCents: number, quantity: number): number; // arredondamento — ADR-02
 function sumCents(values: number[]): number;
 
 function calculateMonthSummary(
   finishedLists: Pick<ShoppingList, 'total' | 'finishedAt'>[],
-  referenceDate: Date
+  referenceDate: Date,
 ): {
   currentMonthTotalCents: number;
   averagePerPurchaseCents: number;
   previousMonthTotalCents: number;
   diffCents: number;
-  diffPercent: number | null;  // null se o mês anterior não teve nenhuma compra
+  diffPercent: number | null; // null se o mês anterior não teve nenhuma compra
 };
 ```
 
 ### `src/lib/format.ts` — RF-03, RF-21
 
 ```ts
-function formatCurrencyBRL(cents: number): string;              // "R$ 1.234,56"
-function formatQuantity(quantity: number, unit: Unit): string;  // "3" | "0,750"
+function formatCurrencyBRL(cents: number): string; // "R$ 1.234,56"
+function formatQuantity(quantity: number, unit: Unit): string; // "3" | "0,750"
 function formatCartSummary(itemCount: number, unitSum: number): string; // "12 itens · 19 unidades"
 function titleCase(text: string): string;
-function formatDate(iso: string): string;                       // "07/09/2026"
+function formatDate(iso: string): string; // "07/09/2026"
 ```
 
 ### `src/db/listsQueries.ts` e `itemsQueries.ts`
 
 ```ts
 // listsQueries.ts
-function createList(input: { name: string }): Promise<ShoppingList>;             // RF-51, RF-43
-function getActiveList(): Promise<ShoppingList | null>;                          // RF-51/52
-function setBudget(listId: number, budget: number | null): Promise<void>;        // RF-34
+function createList(input: { name: string }): Promise<ShoppingList>; // RF-51, RF-43
+function getActiveList(): Promise<ShoppingList | null>; // RF-51/52
+function setBudget(listId: number, budget: number | null): Promise<void>; // RF-34
 function finalizeList(listId: number, name: string, store: string | null): Promise<void>; // RF-37–39
-function listFinishedLists(): Promise<ShoppingList[]>;                           // RF-41
+function listFinishedLists(): Promise<ShoppingList[]>; // RF-41
 function getListWithItems(listId: number): Promise<{ list: ShoppingList; items: ListItem[] }>; // RF-42
 
 // itemsQueries.ts
-function addItem(input: ListItemInput & { listId: number; photoUri: string | null }): Promise<ListItem>; // RF-06/11/23
+function addItem(
+  input: ListItemInput & { listId: number; photoUri: string | null },
+): Promise<ListItem>; // RF-06/11/23
 function updateItem(id: number, changes: Partial<ListItemInput>): Promise<ListItem>; // RF-10
-function deleteItem(id: number): Promise<void>;                                  // RF-31, após o timer — ADR-05
+function deleteItem(id: number): Promise<void>; // RF-31, após o timer — ADR-05
 function listItemsByListId(listId: number): Promise<ListItem[]>;
 ```
 

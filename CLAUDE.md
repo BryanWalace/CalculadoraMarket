@@ -31,15 +31,15 @@ Carrinho é um app mobile Android que soma o valor de uma compra de mercado em t
 
 ## Comandos
 
-| Comando | Descrição |
-|---|---|
-| `npx expo start --dev-client` | Ambiente de desenvolvimento (requer dev client instalado — ML Kit não roda no Expo Go) |
-| `npm run lint` | ESLint |
-| `npm run test` | Suíte de testes |
-| `npx tsc --noEmit` | Checagem de tipos |
-| `npx expo prebuild` | Gera os projetos nativos `android`/`ios` |
-| `npx expo run:android` | Build e instalação local no Android (gratuito, sem depender de cota de nuvem) |
-| `eas build -p android --profile preview` | Alternativa via EAS Build, plano gratuito |
+| Comando                                  | Descrição                                                                              |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `npx expo start --dev-client`            | Ambiente de desenvolvimento (requer dev client instalado — ML Kit não roda no Expo Go) |
+| `npm run lint`                           | ESLint                                                                                 |
+| `npm run test`                           | Suíte de testes                                                                        |
+| `npx tsc --noEmit`                       | Checagem de tipos                                                                      |
+| `npx expo prebuild`                      | Gera os projetos nativos `android`/`ios`                                               |
+| `npx expo run:android`                   | Build e instalação local no Android (gratuito, sem depender de cota de nuvem)          |
+| `eas build -p android --profile preview` | Alternativa via EAS Build, plano gratuito                                              |
 
 ## Estrutura de pastas (por feature, não por tipo de arquivo)
 
@@ -68,7 +68,7 @@ docs/
 - Consultas SQL sempre parametrizadas (`?` + array de parâmetros) — nunca concatenação de string, nem com dado "confiável" vindo do OCR.
 - TDD obrigatório em `lib/money` e `lib/ocr-parser`: teste falhando primeiro, depois a implementação.
 - Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`), mensagem em português, um commit por tarefa de `docs/tasks.md`.
-- Sem código morto, comentário explicando o óbvio ou `console.log` esquecido. Comentário só para explicar *por quê*, nunca *o quê*.
+- Sem código morto, comentário explicando o óbvio ou `console.log` esquecido. Comentário só para explicar _por quê_, nunca _o quê_.
 - Sem `catch` silencioso: todo erro é tratado com feedback ao usuário, ou propagado.
 - `accessibilityLabel`/`accessibilityRole` em todo controle interativo; alvo de toque mínimo 48dp.
 - Interface e mensagens sempre em português do Brasil; moeda em BRL (`R$ 1.234,56`, vírgula decimal).
