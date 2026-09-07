@@ -89,11 +89,76 @@ function selectBestPrice(blocks: OcrBlock[]): number | null {
     .cents;
 }
 
+/** Palavras comuns em etiquetas que nunca são o nome do produto (RF-20). */
+const NOISE_WORDS = [
+  'OFERTA',
+  'PROMOÇÃO',
+  'PROMOCAO',
+  'VALIDADE',
+  'CÓD',
+  'COD',
+  'EAN',
+  'À VISTA',
+  'A VISTA',
+  'LEVE',
+  'PAGUE',
+];
+
+function countLetters(text: string): number {
+  return (text.match(/[a-zA-ZÀ-ÿ]/g) ?? []).length;
+}
+
+function countDigits(text: string): number {
+  return (text.match(/\d/g) ?? []).length;
+}
+
+function isNoiseLine(text: string): boolean {
+  const upper = text.toUpperCase();
+  return NOISE_WORDS.some((word) => upper.includes(word));
+}
+
+/** Código de barras, CNPJ etc.: mais dígito do que letra. */
+function isCodeLine(text: string): boolean {
+  return countDigits(text) > countLetters(text);
+}
+
+function toTitleCase(text: string): string {
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map((word) => (word.length > 0 ? word[0].toUpperCase() + word.slice(1) : word))
+    .join(' ');
+}
+
+/** RF-20: a linha alfabética mais longa que não seja preço, código nem ruído. */
+function selectProductName(blocks: OcrBlock[]): string | null {
+  const candidates = blocks
+    .map((block) => block.text)
+    .filter(
+      (text) =>
+        countLetters(text) > 0 &&
+        !matchIsolatedPrice(text) &&
+        !isCodeLine(text) &&
+        !isNoiseLine(text),
+    );
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const longest = candidates.reduce((best, current) =>
+    countLetters(current) > countLetters(best) ? current : best,
+  );
+
+  return toTitleCase(longest);
+}
+
 export function parseLabel(blocks: OcrBlock[]): ParsedLabel {
   const priceCents = selectBestPrice(blocks);
+  const name = selectProductName(blocks);
 
   return {
-    name: null,
+    name,
     priceCents,
     unit: 'un',
     confident: priceCents !== null,

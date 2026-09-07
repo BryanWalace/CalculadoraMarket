@@ -93,3 +93,48 @@ describe('parseLabel — ignora candidatos que não são preço (RF-19)', () => 
     expect(result.priceCents).toBeNull();
   });
 });
+
+describe('parseLabel — extração do nome (RF-20, RF-21)', () => {
+  it('escolhe a linha alfabética mais longa como nome do produto', () => {
+    const result = parseLabel([
+      { text: 'ARROZ BRANCO TIPO 1 5KG', boundingBoxHeight: 30 },
+      { text: 'R$ 24,90', boundingBoxHeight: 40 },
+      { text: 'COD', boundingBoxHeight: 20 },
+    ]);
+    expect(result.name).toBe('Arroz Branco Tipo 1 5kg');
+  });
+
+  it('aplica Title Case ao nome extraído', () => {
+    const result = parseLabel([{ text: 'FEIJÃO PRETO CARIOCA', boundingBoxHeight: 30 }]);
+    expect(result.name).toBe('Feijão Preto Carioca');
+  });
+
+  it('exclui palavras de ruído comuns em etiquetas (OFERTA, PROMOÇÃO, VALIDADE, CÓD, EAN, À VISTA, LEVE, PAGUE)', () => {
+    const result = parseLabel([
+      { text: 'OFERTA IMPERDÍVEL', boundingBoxHeight: 50 },
+      { text: 'PROMOÇÃO DA SEMANA', boundingBoxHeight: 45 },
+      { text: 'LEVE 3 PAGUE 2', boundingBoxHeight: 40 },
+      { text: 'À VISTA NO PIX', boundingBoxHeight: 35 },
+      { text: 'Biscoito Recheado', boundingBoxHeight: 20 },
+    ]);
+    expect(result.name).toBe('Biscoito Recheado');
+  });
+
+  it('não escolhe o preço nem o código como nome', () => {
+    const result = parseLabel([
+      { text: 'R$ 12,34', boundingBoxHeight: 40 },
+      { text: '7891234567895', boundingBoxHeight: 40 },
+      { text: 'Leite Integral', boundingBoxHeight: 20 },
+    ]);
+    expect(result.name).toBe('Leite Integral');
+  });
+
+  it('retorna name null quando nenhuma linha alfabética sobra', () => {
+    const result = parseLabel([
+      { text: 'R$ 12,34', boundingBoxHeight: 40 },
+      { text: '7891234567895', boundingBoxHeight: 40 },
+      { text: 'OFERTA', boundingBoxHeight: 20 },
+    ]);
+    expect(result.name).toBeNull();
+  });
+});
