@@ -132,6 +132,25 @@ describe('CameraScreen', () => {
     expect(pushedUrl).toContain('unit=un');
   });
 
+  it('navega com lowConfidence=1 quando o OCR falha totalmente (RF-25)', async () => {
+    mockPermission = { granted: true, canAskAgain: true };
+    mockScanLabel.mockResolvedValue({
+      photoUri: 'file:///document/etiqueta-123.jpg',
+      parsed: { name: null, priceCents: null, unit: 'un', confident: false },
+    });
+
+    const { getByLabelText } = await render(<CameraScreen />);
+    await fireEvent(getByLabelText('Moldura de enquadramento do preço'), 'layout', {
+      nativeEvent: { layout: { x: 40, y: 300, width: 320, height: 120 } },
+    });
+    await fireEvent.press(getByLabelText('Fotografar etiqueta'));
+
+    const pushedUrl = mockPush.mock.calls[0][0] as string;
+    expect(pushedUrl).toContain('lowConfidence=1');
+    expect(pushedUrl).not.toContain('name=');
+    expect(pushedUrl).not.toContain('priceCents=');
+  });
+
   it('mostra um aviso amigável se a captura/OCR falhar, sem derrubar o app', async () => {
     mockPermission = { granted: true, canAskAgain: true };
     mockScanLabel.mockRejectedValue(new Error('falha nativa qualquer'));

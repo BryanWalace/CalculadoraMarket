@@ -11,6 +11,7 @@ let mockSearchParams: {
   name?: string;
   priceCents?: string;
   unit?: string;
+  lowConfidence?: string;
 } = {};
 
 jest.mock('expo-router', () => ({
@@ -118,6 +119,24 @@ describe('ConfirmationScreen', () => {
 
     expect(getByLabelText('Nome do produto').props.value).toBe('');
     expect(getByLabelText('Preço unitário').props.value).toBe('R$ 24,90');
+  });
+
+  it('mostra o aviso discreto de falha total do OCR e abre em branco (RF-25)', async () => {
+    mockSearchParams = { photoUri: 'file:///document/etiqueta-123.jpg', lowConfidence: '1' };
+
+    const { getByText, getByLabelText } = await render(<ConfirmationScreen />);
+
+    expect(getByText('Não consegui ler a etiqueta, preencha manualmente')).toBeTruthy();
+    expect(getByLabelText('Nome do produto').props.value).toBe('');
+    expect(getByLabelText('Preço unitário').props.value).toBe('R$ 0,00');
+  });
+
+  it('não mostra aviso de falha quando está editando um item existente', async () => {
+    mockSearchParams = { itemId: '5', lowConfidence: '1' };
+
+    const { queryByText } = await render(<ConfirmationScreen />);
+
+    expect(queryByText('Não consegui ler a etiqueta, preencha manualmente')).toBeNull();
   });
 
   it('cancelar volta para a tela anterior sem gravar nada', async () => {

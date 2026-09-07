@@ -56,7 +56,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-36** — `src/features/scanner/scanLabel.ts`: adaptador ML Kit → `OcrBlock[]` e orquestração câmera → recorte → OCR → parser. _(plan.md ADR-03)_ ⚠️ não testável em dispositivo real neste ambiente
 - [x] **T-37** — Integrar `scanLabel` à tela de confirmação: pré-preencher nome/preço/unidade/quantidade com o resultado do OCR. _(RF-23)_
 - [x] **T-38** — Tratar extração parcial: pré-preencher só os campos reconhecidos, deixar o resto em branco sem aviso de erro. _(RF-24)_ (mesmo commit da T-37 — o mecanismo de `Partial<>` já cobre os dois)
-- [ ] **T-39** — Tratar falha total/baixa confiança: tela em branco com aviso discreto "Não consegui ler a etiqueta, preencha manualmente". _(RF-25)_
+- [x] **T-39** — Tratar falha total/baixa confiança: tela em branco com aviso discreto "Não consegui ler a etiqueta, preencha manualmente". _(RF-25)_
 - [ ] **T-40** — Try/catch em torno de captura e OCR com mensagem amigável — nunca crashar por uma foto ruim.
 - [ ] **T-41** — Teste de integração: etiqueta simulada → item pré-preenchido corretamente na confirmação → adicionar → total correto.
 

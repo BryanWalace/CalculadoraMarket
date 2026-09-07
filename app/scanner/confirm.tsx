@@ -6,12 +6,13 @@ import { ItemForm } from '../../src/features/scanner/components/ItemForm';
 
 export default function ConfirmationScreen() {
   const db = useSQLiteContext();
-  const { itemId, photoUri, name, priceCents, unit } = useLocalSearchParams<{
+  const { itemId, photoUri, name, priceCents, unit, lowConfidence } = useLocalSearchParams<{
     itemId?: string;
     photoUri?: string;
     name?: string;
     priceCents?: string;
     unit?: string;
+    lowConfidence?: string;
   }>();
   const addItem = useCartStore((state) => state.addItem);
   const updateItem = useCartStore((state) => state.updateItem);
@@ -39,9 +40,17 @@ export default function ConfirmationScreen() {
       }
     : ocrInitialValues;
 
+  // RF-25: falha total do OCR (nem nome nem preço) — nunca trava o
+  // usuário, só abre em branco com um aviso discreto.
+  const notice =
+    !editingItem && lowConfidence === '1'
+      ? 'Não consegui ler a etiqueta, preencha manualmente'
+      : undefined;
+
   return (
     <ItemForm
       initialValues={initialValues}
+      notice={notice}
       onSubmit={async (input) => {
         if (editingItem) {
           await updateItem(db, editingItem.id, input);
