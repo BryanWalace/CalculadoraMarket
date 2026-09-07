@@ -1,4 +1,4 @@
-import { multiplyCents } from './money';
+import { multiplyCents, sumCents } from './money';
 
 describe('multiplyCents', () => {
   it('multiplica preço unitário por quantidade inteira', () => {
@@ -22,5 +22,26 @@ describe('multiplyCents', () => {
 
   it('quantidade 1 retorna o próprio preço unitário', () => {
     expect(multiplyCents(1234, 1)).toBe(1234);
+  });
+});
+
+describe('sumCents', () => {
+  it('soma uma lista de subtotais', () => {
+    expect(sumCents([1500, 824, 13])).toBe(2337);
+  });
+
+  it('retorna 0 para uma lista vazia (carrinho sem itens)', () => {
+    expect(sumCents([])).toBe(0);
+  });
+
+  it('retorna o próprio valor para uma lista de um item', () => {
+    expect(sumCents([999])).toBe(999);
+  });
+
+  it('nunca acumula fora da lista: o resultado depende só dos valores recebidos', () => {
+    // Regra de negócio (spec §3): o total é sempre derivado dos itens atuais,
+    // nunca um acumulador que sobrevive além da lista passada.
+    expect(sumCents([100, 200])).toBe(300);
+    expect(sumCents([100])).toBe(100);
   });
 });

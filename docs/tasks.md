@@ -26,7 +26,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 ## Etapa 2 — CRUD manual da lista com total funcionando
 
 - [x] **T-11** — **TDD** `src/lib/money.ts`: testes de `multiplyCents` (incluindo arredondamento) antes da implementação. _(RF-07, plan.md ADR-02)_
-- [ ] **T-12** — **TDD** `src/lib/money.ts`: testes de `sumCents`/soma de totais antes da implementação. _(RF-02)_
+- [x] **T-12** — **TDD** `src/lib/money.ts`: testes de `sumCents`/soma de totais antes da implementação. _(RF-02)_
 - [ ] **T-13** — `src/lib/format.ts`: `formatCurrencyBRL`, `formatQuantity`, `formatCartSummary`, `formatDate`, com testes. _(RF-03)_
 - [ ] **T-14** — `src/lib/validation.ts`: schemas zod de item e de lista, com testes dos limites de preço/quantidade/nome/loja/orçamento. _(RF-08, RF-09, RF-34, RF-38)_
 - [ ] **T-15** — `src/db/itemsQueries.ts` e `listsQueries.ts`: CRUD parametrizado (criar lista, pegar lista ativa, adicionar/editar/remover item, listar itens).
