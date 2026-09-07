@@ -1,13 +1,11 @@
 import { Link } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function CartScreen() {
+export default function HistoryScreen() {
   return (
     <View style={styles.container}>
-      <Text>Carrinho</Text>
-      <Link href="/scanner/camera">Câmera</Link>
-      <Link href="/history">Histórico</Link>
-      <Link href="/privacy">Privacidade</Link>
+      <Text>Histórico</Text>
+      <Link href="/history/1">Ver uma compra (exemplo)</Link>
     </View>
   );
 }
