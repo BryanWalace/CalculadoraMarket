@@ -53,7 +53,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-33** — **TDD** `src/lib/ocr-parser.ts`: testes de extração de nome (linha alfabética mais longa, exclusão de palavras de ruído) e Title Case. _(RF-20, RF-21)_
 - [x] **T-34** — **TDD** `src/lib/ocr-parser.ts`: testes de detecção de unidade `kg` e do caso sem confiança (nem nome nem preço válidos). _(RF-22, RF-25)_
 - [x] **T-35** — Consolidar os testes de T-31 a T-34 em pelo menos 10 amostras reais de etiqueta, incluindo casos que devem falhar (cobertura obrigatória do pedido original).
-- [ ] **T-36** — `src/features/scanner/scanLabel.ts`: adaptador ML Kit → `OcrBlock[]` e orquestração câmera → recorte → OCR → parser. _(plan.md ADR-03)_
+- [x] **T-36** — `src/features/scanner/scanLabel.ts`: adaptador ML Kit → `OcrBlock[]` e orquestração câmera → recorte → OCR → parser. _(plan.md ADR-03)_ ⚠️ não testável em dispositivo real neste ambiente
 - [ ] **T-37** — Integrar `scanLabel` à tela de confirmação: pré-preencher nome/preço/unidade/quantidade com o resultado do OCR. _(RF-23)_
 - [ ] **T-38** — Tratar extração parcial: pré-preencher só os campos reconhecidos, deixar o resto em branco sem aviso de erro. _(RF-24)_
 - [ ] **T-39** — Tratar falha total/baixa confiança: tela em branco com aviso discreto "Não consegui ler a etiqueta, preencha manualmente". _(RF-25)_
