@@ -113,7 +113,13 @@ export default function CartScreen() {
       ) : null}
 
       <View style={styles.footer}>
-        <Text accessibilityLabel="Total geral" style={styles.total}>
+        <Text
+          accessibilityLabel="Total geral"
+          style={[
+            styles.total,
+            activeList?.budget != null && totalCents > activeList.budget && styles.totalOverBudget,
+          ]}
+        >
           {formatCurrencyBRL(totalCents)}
         </Text>
         <Text>{formatCartSummary(itemCount, unitSum)}</Text>
@@ -207,6 +213,9 @@ const styles = StyleSheet.create({
   total: {
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  totalOverBudget: {
+    color: '#dc2626',
   },
   progressBarWrapper: {
     width: '100%',

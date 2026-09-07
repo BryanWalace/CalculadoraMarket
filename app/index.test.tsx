@@ -184,6 +184,36 @@ describe('CartScreen', () => {
     });
   });
 
+  it('mantém a cor padrão do total dentro do orçamento', async () => {
+    useCartStore.setState({
+      isHydrated: true,
+      activeList: { ...ACTIVE_LIST, budget: 10000 },
+      items: [makeItem({ subtotal: 3998 })],
+    });
+
+    const { getByLabelText } = await render(<CartScreen />);
+
+    const style = getByLabelText('Total geral').props.style;
+    expect(Array.isArray(style) ? style.flat() : [style]).not.toContainEqual(
+      expect.objectContaining({ color: '#dc2626' }),
+    );
+  });
+
+  it('muda a cor do total ao ultrapassar o orçamento (RF-36)', async () => {
+    useCartStore.setState({
+      isHydrated: true,
+      activeList: { ...ACTIVE_LIST, budget: 3000 },
+      items: [makeItem({ subtotal: 3998 })],
+    });
+
+    const { getByLabelText } = await render(<CartScreen />);
+
+    const style = getByLabelText('Total geral').props.style;
+    expect(Array.isArray(style) ? style.flat() : [style]).toContainEqual(
+      expect.objectContaining({ color: '#dc2626' }),
+    );
+  });
+
   it('abre o diálogo de orçamento e chama setBudget ao salvar (RF-34)', async () => {
     const setBudget = jest.fn().mockResolvedValue(undefined);
     useCartStore.setState({
