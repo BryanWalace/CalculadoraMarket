@@ -16,9 +16,11 @@ import {
   useCartStore,
 } from '../src/features/cart/store';
 import { formatCartSummary, formatCurrencyBRL } from '../src/lib/format';
+import { useAppColors } from '../src/lib/theme';
 
 export default function CartScreen() {
   const db = useSQLiteContext();
+  const colors = useAppColors();
   const isHydrated = useCartStore((state) => state.isHydrated);
   const items = useCartStore((state) => state.items);
   const activeList = useCartStore((state) => state.activeList);
@@ -59,14 +61,14 @@ export default function CartScreen() {
 
   if (!isHydrated) {
     return (
-      <View style={styles.centered}>
-        <Text>Carregando…</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Carregando…</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {items.length === 0 ? (
         <EmptyState />
       ) : (
@@ -78,15 +80,17 @@ export default function CartScreen() {
               accessibilityLabel="Limpar lista"
               style={styles.clearButton}
             >
-              <Text>Limpar lista</Text>
+              <Text style={{ color: colors.text }}>Limpar lista</Text>
             </Pressable>
             <Pressable
               onPress={() => setIsFinalizing(true)}
               accessibilityRole="button"
               accessibilityLabel="Finalizar compra"
-              style={styles.finalizeButton}
+              style={[styles.finalizeButton, { backgroundColor: colors.success }]}
             >
-              <Text style={styles.finalizeButtonText}>Finalizar compra</Text>
+              <Text style={[styles.finalizeButtonText, { color: colors.primaryText }]}>
+                Finalizar compra
+              </Text>
             </Pressable>
           </View>
           <FlatList
@@ -112,17 +116,19 @@ export default function CartScreen() {
         />
       ) : null}
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { borderTopColor: colors.border }]}>
         <Text
           accessibilityLabel="Total geral"
           style={[
             styles.total,
-            activeList?.budget != null && totalCents > activeList.budget && styles.totalOverBudget,
+            { color: colors.text },
+            activeList?.budget != null &&
+              totalCents > activeList.budget && { color: colors.danger },
           ]}
         >
           {formatCurrencyBRL(totalCents)}
         </Text>
-        <Text>{formatCartSummary(itemCount, unitSum)}</Text>
+        <Text style={{ color: colors.textSecondary }}>{formatCartSummary(itemCount, unitSum)}</Text>
         {activeList?.budget != null ? (
           <View style={styles.progressBarWrapper}>
             <BudgetProgressBar totalCents={totalCents} budgetCents={activeList.budget} />
@@ -134,7 +140,7 @@ export default function CartScreen() {
           accessibilityLabel="Definir orçamento"
           style={styles.budgetButton}
         >
-          <Text style={styles.budgetButtonText}>
+          <Text style={[styles.budgetButtonText, { color: colors.primary }]}>
             {activeList?.budget != null
               ? `Orçamento: ${formatCurrencyBRL(activeList.budget)}`
               : 'Definir orçamento'}
@@ -146,7 +152,7 @@ export default function CartScreen() {
         onPress={() => router.push('/scanner/camera')}
         accessibilityRole="button"
         accessibilityLabel="Fotografar etiqueta"
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: colors.primary }]}
       >
         <Text style={styles.fabIcon}>📷</Text>
       </Pressable>
@@ -194,10 +200,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: 'center',
     borderRadius: 8,
-    backgroundColor: '#16a34a',
   },
   finalizeButtonText: {
-    color: '#ffffff',
     fontWeight: 'bold',
   },
   centered: {
@@ -213,9 +217,6 @@ const styles = StyleSheet.create({
   total: {
     fontSize: 28,
     fontWeight: 'bold',
-  },
-  totalOverBudget: {
-    color: '#dc2626',
   },
   progressBarWrapper: {
     width: '100%',
@@ -239,7 +240,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563eb',
   },
   fabIcon: {
     fontSize: 24,

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { formatCurrencyBRL, formatQuantity } from '../../../lib/format';
 import { multiplyCents } from '../../../lib/money';
+import { useAppColors } from '../../../lib/theme';
 import { listItemInputSchema, type ListItemInput, type Unit } from '../../../lib/validation';
 
 export interface ItemFormValues {
@@ -31,6 +32,7 @@ const DEFAULT_VALUES: ItemFormValues = {
 const QUANTITY_STEP: Record<Unit, number> = { un: 1, kg: 0.1 };
 
 export function ItemForm({ initialValues, onSubmit, onCancel, notice }: ItemFormProps) {
+  const colors = useAppColors();
   const [values, setValues] = useState<ItemFormValues>({ ...DEFAULT_VALUES, ...initialValues });
 
   const subtotalCents = useMemo(
@@ -92,63 +94,76 @@ export function ItemForm({ initialValues, onSubmit, onCancel, notice }: ItemForm
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {notice ? (
-        <Text style={styles.notice} accessibilityRole="alert">
+        <Text style={[styles.notice, { color: colors.textSecondary }]} accessibilityRole="alert">
           {notice}
         </Text>
       ) : null}
 
-      <Text style={styles.label}>Nome</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Nome</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
         value={values.name}
         onChangeText={(text) => setValues((previous) => ({ ...previous, name: text }))}
         placeholder="Nome do produto"
+        placeholderTextColor={colors.textSecondary}
         accessibilityLabel="Nome do produto"
       />
 
-      <Text style={styles.label}>Preço unitário</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Preço unitário</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
         value={formatCurrencyBRL(values.unitPriceCents)}
         onChangeText={handlePriceChange}
         keyboardType="numeric"
         accessibilityLabel="Preço unitário"
       />
 
-      <Text style={styles.label}>Unidade</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Unidade</Text>
       <View style={styles.unitRow}>
         <Pressable
           onPress={() => selectUnit('un')}
           accessibilityRole="button"
           accessibilityLabel="Unidade: un"
-          style={[styles.unitButton, values.unit === 'un' && styles.unitButtonSelected]}
+          style={[
+            styles.unitButton,
+            { borderColor: colors.border },
+            values.unit === 'un' && { borderColor: colors.primary, borderWidth: 2 },
+          ]}
         >
-          <Text>un</Text>
+          <Text style={{ color: colors.text }}>un</Text>
         </Pressable>
         <Pressable
           onPress={() => selectUnit('kg')}
           accessibilityRole="button"
           accessibilityLabel="Unidade: kg"
-          style={[styles.unitButton, values.unit === 'kg' && styles.unitButtonSelected]}
+          style={[
+            styles.unitButton,
+            { borderColor: colors.border },
+            values.unit === 'kg' && { borderColor: colors.primary, borderWidth: 2 },
+          ]}
         >
-          <Text>kg</Text>
+          <Text style={{ color: colors.text }}>kg</Text>
         </Pressable>
       </View>
 
-      <Text style={styles.label}>Quantidade</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Quantidade</Text>
       <View style={styles.quantityRow}>
         <Pressable
           onPress={() => adjustQuantity(-QUANTITY_STEP[values.unit])}
           accessibilityRole="button"
           accessibilityLabel="Diminuir quantidade"
-          style={styles.quantityButton}
+          style={[styles.quantityButton, { borderColor: colors.border }]}
         >
-          <Text>−</Text>
+          <Text style={{ color: colors.text }}>−</Text>
         </Pressable>
         <TextInput
-          style={[styles.input, styles.quantityInput]}
+          style={[
+            styles.input,
+            styles.quantityInput,
+            { borderColor: colors.border, color: colors.text },
+          ]}
           value={formatQuantity(values.quantity, values.unit)}
           onChangeText={handleQuantityChange}
           keyboardType="numeric"
@@ -158,19 +173,19 @@ export function ItemForm({ initialValues, onSubmit, onCancel, notice }: ItemForm
           onPress={() => adjustQuantity(QUANTITY_STEP[values.unit])}
           accessibilityRole="button"
           accessibilityLabel="Aumentar quantidade"
-          style={styles.quantityButton}
+          style={[styles.quantityButton, { borderColor: colors.border }]}
         >
-          <Text>+</Text>
+          <Text style={{ color: colors.text }}>+</Text>
         </Pressable>
       </View>
 
-      <Text style={styles.subtotal} accessibilityLabel="Subtotal">
+      <Text style={[styles.subtotal, { color: colors.text }]} accessibilityLabel="Subtotal">
         Subtotal: {formatCurrencyBRL(subtotalCents)}
       </Text>
 
       <View style={styles.actionsRow}>
         <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancelar">
-          <Text>Cancelar</Text>
+          <Text style={{ color: colors.text }}>Cancelar</Text>
         </Pressable>
         <Pressable
           onPress={handleSubmit}
@@ -180,7 +195,7 @@ export function ItemForm({ initialValues, onSubmit, onCancel, notice }: ItemForm
           accessibilityState={{ disabled: !validation.success }}
           style={!validation.success && styles.disabledButton}
         >
-          <Text>Adicionar</Text>
+          <Text style={{ color: colors.primary }}>Adicionar</Text>
         </Pressable>
       </View>
     </View>
@@ -216,9 +231,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderRadius: 8,
-  },
-  unitButtonSelected: {
-    borderWidth: 2,
   },
   quantityRow: {
     flexDirection: 'row',

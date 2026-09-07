@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { ShoppingList } from '../../../db/schema';
 import { formatCurrencyBRL, formatDate } from '../../../lib/format';
+import { useAppColors } from '../../../lib/theme';
 
 interface HistoryListItemProps {
   list: ShoppingList;
@@ -9,18 +10,22 @@ interface HistoryListItemProps {
 }
 
 export function HistoryListItem({ list, onPress }: HistoryListItemProps) {
+  const colors = useAppColors();
+
   return (
     <Pressable
-      style={styles.card}
+      style={[styles.card, { borderBottomColor: colors.border }]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Compra ${list.name}`}
     >
       <View>
-        <Text style={styles.name}>{list.name}</Text>
-        {list.finishedAt ? <Text>{formatDate(list.finishedAt)}</Text> : null}
+        <Text style={[styles.name, { color: colors.text }]}>{list.name}</Text>
+        {list.finishedAt ? (
+          <Text style={{ color: colors.textSecondary }}>{formatDate(list.finishedAt)}</Text>
+        ) : null}
       </View>
-      <Text style={styles.total}>{formatCurrencyBRL(list.total)}</Text>
+      <Text style={[styles.total, { color: colors.text }]}>{formatCurrencyBRL(list.total)}</Text>
     </Pressable>
   );
 }

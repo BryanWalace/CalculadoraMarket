@@ -8,9 +8,11 @@ import type { ShoppingList } from '../../src/db/schema';
 import { HistoryListItem } from '../../src/features/history/components/HistoryListItem';
 import { SummaryCard } from '../../src/features/history/components/SummaryCard';
 import { calculateMonthSummary } from '../../src/lib/money';
+import { useAppColors } from '../../src/lib/theme';
 
 export default function HistoryScreen() {
   const db = useSQLiteContext();
+  const colors = useAppColors();
   const [lists, setLists] = useState<ShoppingList[] | null>(null);
 
   useEffect(() => {
@@ -19,17 +21,19 @@ export default function HistoryScreen() {
 
   if (lists === null) {
     return (
-      <View style={styles.centered}>
-        <Text>Carregando…</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Carregando…</Text>
       </View>
     );
   }
 
   if (lists.length === 0) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.title}>Nenhuma compra finalizada ainda</Text>
-        <Text>Suas compras aparecem aqui depois de finalizadas.</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Nenhuma compra finalizada ainda</Text>
+        <Text style={{ color: colors.textSecondary }}>
+          Suas compras aparecem aqui depois de finalizadas.
+        </Text>
       </View>
     );
   }
@@ -40,6 +44,7 @@ export default function HistoryScreen() {
     <FlatList
       data={lists}
       keyExtractor={(list) => String(list.id)}
+      style={{ backgroundColor: colors.background }}
       ListHeaderComponent={<SummaryCard summary={summary} />}
       renderItem={({ item }) => (
         <HistoryListItem list={item} onPress={() => router.push(`/history/${item.id}`)} />

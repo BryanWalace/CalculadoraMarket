@@ -1,9 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useAppColors } from '../src/lib/theme';
+
 export default function PrivacyScreen() {
+  const colors = useAppColors();
+
   return (
-    <View style={styles.container}>
-      <Text>Privacidade</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={{ color: colors.text }}>Privacidade</Text>
     </View>
   );
 }

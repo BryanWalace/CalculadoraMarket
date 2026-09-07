@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { formatCurrencyBRL } from '../../../lib/format';
+import { useAppColors } from '../../../lib/theme';
 import { shoppingListInputSchema } from '../../../lib/validation';
 
 export interface BudgetDialogProps {
@@ -12,6 +13,7 @@ export interface BudgetDialogProps {
 
 /** RF-34: orçamento opcional por carrinho, em centavos; campo vazio remove o orçamento. */
 export function BudgetDialog({ currentBudgetCents, onConfirm, onCancel }: BudgetDialogProps) {
+  const colors = useAppColors();
   const [cents, setCents] = useState(currentBudgetCents ?? 0);
   const [isEmpty, setIsEmpty] = useState(currentBudgetCents === null);
 
@@ -36,22 +38,25 @@ export function BudgetDialog({ currentBudgetCents, onConfirm, onCancel }: Budget
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Definir orçamento</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Definir orçamento</Text>
 
-      <Text style={styles.label}>Orçamento (deixe em branco para remover)</Text>
+      <Text style={[styles.label, { color: colors.text }]}>
+        Orçamento (deixe em branco para remover)
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
         value={isEmpty ? '' : formatCurrencyBRL(cents)}
         onChangeText={handleChange}
         keyboardType="numeric"
         placeholder="R$ 0,00"
+        placeholderTextColor={colors.textSecondary}
         accessibilityLabel="Orçamento"
       />
 
       <View style={styles.actionsRow}>
         <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancelar">
-          <Text>Cancelar</Text>
+          <Text style={{ color: colors.text }}>Cancelar</Text>
         </Pressable>
         <Pressable
           onPress={handleConfirm}
@@ -61,7 +66,7 @@ export function BudgetDialog({ currentBudgetCents, onConfirm, onCancel }: Budget
           accessibilityState={{ disabled: !validation.success }}
           style={!validation.success && styles.disabledButton}
         >
-          <Text>Salvar</Text>
+          <Text style={{ color: colors.primary }}>Salvar</Text>
         </Pressable>
       </View>
     </View>

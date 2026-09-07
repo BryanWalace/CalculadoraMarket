@@ -8,9 +8,11 @@ import type { ListItem, ShoppingList } from '../../src/db/schema';
 import { useCartStore } from '../../src/features/cart/store';
 import { shareExportedPurchase } from '../../src/features/history/export';
 import { formatCurrencyBRL, formatDate, formatQuantity } from '../../src/lib/format';
+import { useAppColors } from '../../src/lib/theme';
 
 export default function HistoryDetailScreen() {
   const db = useSQLiteContext();
+  const colors = useAppColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const reopenFromHistory = useCartStore((state) => state.reopenFromHistory);
   const [data, setData] = useState<{ list: ShoppingList; items: ListItem[] } | null | undefined>(
@@ -73,16 +75,16 @@ export default function HistoryDetailScreen() {
 
   if (data === undefined) {
     return (
-      <View style={styles.centered}>
-        <Text>Carregando…</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Carregando…</Text>
       </View>
     );
   }
 
   if (data === null) {
     return (
-      <View style={styles.centered}>
-        <Text>Compra não encontrada.</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Compra não encontrada.</Text>
       </View>
     );
   }
@@ -90,38 +92,47 @@ export default function HistoryDetailScreen() {
   const { list, items } = data;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.name}>{list.name}</Text>
-        {list.finishedAt ? <Text>{formatDate(list.finishedAt)}</Text> : null}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.name, { color: colors.text }]}>{list.name}</Text>
+        {list.finishedAt ? (
+          <Text style={{ color: colors.textSecondary }}>{formatDate(list.finishedAt)}</Text>
+        ) : null}
       </View>
 
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <View style={styles.row} accessibilityLabel={`Item ${item.name}`}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text>
+          <View
+            style={[styles.row, { borderBottomColor: colors.border }]}
+            accessibilityLabel={`Item ${item.name}`}
+          >
+            <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+            <Text style={{ color: colors.textSecondary }}>
               {formatQuantity(item.quantity, item.unit)} {item.unit} ×{' '}
               {formatCurrencyBRL(item.unitPrice)}
             </Text>
-            <Text style={styles.itemSubtotal}>{formatCurrencyBRL(item.subtotal)}</Text>
+            <Text style={[styles.itemSubtotal, { color: colors.text }]}>
+              {formatCurrencyBRL(item.subtotal)}
+            </Text>
           </View>
         )}
       />
 
-      <View style={styles.footer}>
-        <Text accessibilityLabel="Total da compra" style={styles.total}>
+      <View style={[styles.footer, { borderTopColor: colors.border }]}>
+        <Text accessibilityLabel="Total da compra" style={[styles.total, { color: colors.text }]}>
           {formatCurrencyBRL(list.total)}
         </Text>
         <Pressable
           onPress={handleReopen}
           accessibilityRole="button"
           accessibilityLabel="Reabrir como carrinho novo"
-          style={styles.reopenButton}
+          style={[styles.reopenButton, { backgroundColor: colors.primary }]}
         >
-          <Text style={styles.reopenButtonText}>Reabrir como carrinho novo</Text>
+          <Text style={[styles.reopenButtonText, { color: colors.primaryText }]}>
+            Reabrir como carrinho novo
+          </Text>
         </Pressable>
         <View style={styles.exportRow}>
           <Pressable
@@ -130,7 +141,7 @@ export default function HistoryDetailScreen() {
             accessibilityLabel="Exportar CSV"
             style={styles.exportButton}
           >
-            <Text>Exportar CSV</Text>
+            <Text style={{ color: colors.primary }}>Exportar CSV</Text>
           </Pressable>
           <Pressable
             onPress={() => handleExport('text')}
@@ -138,7 +149,7 @@ export default function HistoryDetailScreen() {
             accessibilityLabel="Exportar texto"
             style={styles.exportButton}
           >
-            <Text>Exportar texto</Text>
+            <Text style={{ color: colors.primary }}>Exportar texto</Text>
           </Pressable>
         </View>
       </View>
@@ -188,10 +199,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: 'center',
     borderRadius: 8,
-    backgroundColor: '#2563eb',
   },
   reopenButtonText: {
-    color: '#ffffff',
     fontWeight: 'bold',
   },
   exportRow: {

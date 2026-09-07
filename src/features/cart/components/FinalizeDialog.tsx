@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { formatDate } from '../../../lib/format';
+import { useAppColors } from '../../../lib/theme';
 
 export interface FinalizeDialogProps {
   onConfirm: (input: { name: string; store: string | null }) => void;
@@ -15,6 +16,7 @@ function suggestName(store: string): string {
 
 /** RF-38: nome sugerido (loja + data), sempre editável; loja é opcional. */
 export function FinalizeDialog({ onConfirm, onCancel }: FinalizeDialogProps) {
+  const colors = useAppColors();
   const [store, setStore] = useState('');
   const [name, setName] = useState(() => suggestName(''));
   const [nameTouched, setNameTouched] = useState(false);
@@ -39,21 +41,22 @@ export function FinalizeDialog({ onConfirm, onCancel }: FinalizeDialogProps) {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Finalizar compra</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Finalizar compra</Text>
 
-      <Text style={styles.label}>Loja (opcional)</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Loja (opcional)</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
         value={store}
         onChangeText={handleStoreChange}
         placeholder="Nome do mercado"
+        placeholderTextColor={colors.textSecondary}
         accessibilityLabel="Loja"
       />
 
-      <Text style={styles.label}>Nome da compra</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Nome da compra</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
         value={displayedName}
         onChangeText={handleNameChange}
         accessibilityLabel="Nome da compra"
@@ -61,7 +64,7 @@ export function FinalizeDialog({ onConfirm, onCancel }: FinalizeDialogProps) {
 
       <View style={styles.actionsRow}>
         <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancelar">
-          <Text>Cancelar</Text>
+          <Text style={{ color: colors.text }}>Cancelar</Text>
         </Pressable>
         <Pressable
           onPress={handleConfirm}
@@ -69,7 +72,7 @@ export function FinalizeDialog({ onConfirm, onCancel }: FinalizeDialogProps) {
           accessibilityRole="button"
           accessibilityLabel="Finalizar"
         >
-          <Text>Finalizar</Text>
+          <Text style={{ color: colors.primary }}>Finalizar</Text>
         </Pressable>
       </View>
     </View>
