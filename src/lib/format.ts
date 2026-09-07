@@ -1,3 +1,5 @@
+import type { Unit } from './validation';
+
 /**
  * Formatação manual (sem Intl.NumberFormat): o Hermes, motor JS do React
  * Native, pode não embarcar dados de locale pt-BR completos em toda build,
@@ -11,7 +13,7 @@ export function formatCurrencyBRL(cents: number): string {
   return `R$ ${reaisComMilhar},${centavos.toString().padStart(2, '0')}`;
 }
 
-export function formatQuantity(quantity: number, unit: 'un' | 'kg'): string {
+export function formatQuantity(quantity: number, unit: Unit): string {
   if (unit === 'kg') {
     return quantity.toFixed(3).replace('.', ',');
   }
