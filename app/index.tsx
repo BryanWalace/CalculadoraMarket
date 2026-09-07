@@ -146,6 +146,14 @@ export default function CartScreen() {
               : 'Definir orçamento'}
           </Text>
         </Pressable>
+        <Pressable
+          onPress={() => router.push('/privacy')}
+          accessibilityRole="button"
+          accessibilityLabel="Privacidade"
+          style={styles.privacyButton}
+        >
+          <Text style={{ color: colors.textSecondary }}>Privacidade</Text>
+        </Pressable>
       </View>
 
       <Pressable
@@ -230,6 +238,11 @@ const styles = StyleSheet.create({
   },
   budgetButtonText: {
     textDecorationLine: 'underline',
+  },
+  privacyButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   fab: {
     position: 'absolute',

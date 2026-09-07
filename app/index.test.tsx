@@ -214,6 +214,15 @@ describe('CartScreen', () => {
     );
   });
 
+  it('navega para a tela de privacidade (RF-53)', async () => {
+    useCartStore.setState({ isHydrated: true, activeList: ACTIVE_LIST, items: [] });
+
+    const { getByLabelText } = await render(<CartScreen />);
+    await fireEvent.press(getByLabelText('Privacidade'));
+
+    expect(mockPush).toHaveBeenCalledWith('/privacy');
+  });
+
   it('abre o diálogo de orçamento e chama setBudget ao salvar (RF-34)', async () => {
     const setBudget = jest.fn().mockResolvedValue(undefined);
     useCartStore.setState({
