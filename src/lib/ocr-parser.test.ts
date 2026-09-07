@@ -47,3 +47,49 @@ describe('parseLabel — seleção de preço (RF-17, RF-18)', () => {
     expect(result.priceCents).toBeNull();
   });
 });
+
+describe('parseLabel — ignora candidatos que não são preço (RF-19)', () => {
+  it('ignora código de barras (sequência longa de dígitos, sem separador decimal)', () => {
+    const result = parseLabel([{ text: '7891234567895', boundingBoxHeight: 40 }]);
+    expect(result.priceCents).toBeNull();
+  });
+
+  it('ignora CNPJ mesmo tendo pontos que parecem separador decimal', () => {
+    const result = parseLabel([
+      { text: 'CNPJ 12.345.678/0001-90', boundingBoxHeight: 40 },
+      { text: 'R$ 12,34', boundingBoxHeight: 60 },
+    ]);
+    expect(result.priceCents).toBe(1234);
+  });
+
+  it('ignora data com ponto como separador (não confunde com preço em formato de ponto decimal)', () => {
+    const result = parseLabel([
+      { text: 'VALIDADE 15.03.2026', boundingBoxHeight: 40 },
+      { text: 'R$ 8,50', boundingBoxHeight: 40 },
+    ]);
+    expect(result.priceCents).toBe(850);
+  });
+
+  it('ignora gramatura/volume (500g, 0,500) mesmo com formato parecido com preço', () => {
+    const result = parseLabel([
+      { text: '0,500 KG', boundingBoxHeight: 40 },
+      { text: 'R$ 15,90', boundingBoxHeight: 50 },
+    ]);
+    expect(result.priceCents).toBe(1590);
+  });
+
+  it('reconhece preço por kg mesmo com sufixo /kg colado', () => {
+    const result = parseLabel([{ text: 'R$ 15,90/kg', boundingBoxHeight: 40 }]);
+    expect(result.priceCents).toBe(1590);
+  });
+
+  it('não reconhece nada quando só há código de barras, CNPJ, data e gramatura', () => {
+    const result = parseLabel([
+      { text: '7891234567895', boundingBoxHeight: 40 },
+      { text: 'CNPJ 12.345.678/0001-90', boundingBoxHeight: 40 },
+      { text: 'VALIDADE 15.03.2026', boundingBoxHeight: 40 },
+      { text: '500g', boundingBoxHeight: 40 },
+    ]);
+    expect(result.priceCents).toBeNull();
+  });
+});
