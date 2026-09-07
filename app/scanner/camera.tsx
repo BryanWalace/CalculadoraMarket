@@ -1,24 +1,35 @@
+import { router } from 'expo-router';
 import { useCameraPermissions } from 'expo-camera';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
 
-  if (!permission || !permission.granted) {
+  if (permission?.granted) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Precisamos da câmera</Text>
+        <Text>Câmera</Text>
+      </View>
+    );
+  }
+
+  // Negada de vez (usuário já recusou e o sistema não pergunta mais): a
+  // câmera nunca trava o app, sempre oferece o caminho manual (RF-13).
+  if (permission && !permission.canAskAgain) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Câmera indisponível</Text>
         <Text style={styles.explanation}>
-          A câmera é usada só para fotografar a etiqueta de preço e ler o texto direto no aparelho.
-          Nenhuma foto sai do celular.
+          A permissão de câmera foi negada. Você ainda pode adicionar o item digitando os dados
+          manualmente.
         </Text>
         <Pressable
-          onPress={requestPermission}
+          onPress={() => router.push('/scanner/confirm')}
           accessibilityRole="button"
-          accessibilityLabel="Permitir câmera"
+          accessibilityLabel="Adicionar manualmente"
           style={styles.button}
         >
-          <Text style={styles.buttonText}>Permitir câmera</Text>
+          <Text style={styles.buttonText}>Adicionar manualmente</Text>
         </Pressable>
       </View>
     );
@@ -26,7 +37,26 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <Text>Câmera</Text>
+      <Text style={styles.title}>Precisamos da câmera</Text>
+      <Text style={styles.explanation}>
+        A câmera é usada só para fotografar a etiqueta de preço e ler o texto direto no aparelho.
+        Nenhuma foto sai do celular.
+      </Text>
+      <Pressable
+        onPress={requestPermission}
+        accessibilityRole="button"
+        accessibilityLabel="Permitir câmera"
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Permitir câmera</Text>
+      </Pressable>
+      <Pressable
+        onPress={() => router.push('/scanner/confirm')}
+        accessibilityRole="button"
+        accessibilityLabel="Adicionar manualmente"
+      >
+        <Text>Prefiro digitar manualmente</Text>
+      </Pressable>
     </View>
   );
 }

@@ -44,7 +44,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 ## Etapa 3 — Câmera, OCR, parsing e confirmação automática
 
 - [x] **T-26** — Instalar/configurar `expo-camera`; tela explicativa de permissão antes da primeira solicitação (só pedida no momento do uso). _(RF-12, RF-54)_
-- [ ] **T-27** — Tratar permissão negada: oferecer entrada manual sem travar o app. _(RF-13)_
+- [x] **T-27** — Tratar permissão negada: oferecer entrada manual sem travar o app. _(RF-13)_
 - [ ] **T-28** — `CameraScreen`: preview da câmera com moldura/guia de enquadramento do preço. _(RF-14)_
 - [ ] **T-29** — Capturar foto, recortar para a área da moldura (`expo-image-manipulator`) e salvar no diretório privado do app (nunca na galeria pública). _(RF-15, RF-55)_
 - [ ] **T-30** — Redimensionar/comprimir a foto (largura máx. ~1080px) antes do OCR. _(RF-16)_
