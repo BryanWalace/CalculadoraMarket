@@ -1,17 +1,20 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useSQLiteContext } from 'expo-sqlite';
+import { router } from 'expo-router';
+
+import { ItemForm } from '../../src/features/scanner/components/ItemForm';
+import { useCartStore } from '../../src/features/cart/store';
 
 export default function ConfirmationScreen() {
+  const db = useSQLiteContext();
+  const addItem = useCartStore((state) => state.addItem);
+
   return (
-    <View style={styles.container}>
-      <Text>Confirmação</Text>
-    </View>
+    <ItemForm
+      onSubmit={async (input) => {
+        await addItem(db, input, null);
+        router.back();
+      }}
+      onCancel={() => router.back()}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
