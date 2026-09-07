@@ -1,5 +1,5 @@
-import type { MigratableDatabase } from './migrations';
 import { runMigrations } from './migrations';
+import type { AppDatabase } from './types';
 
 /**
  * expo-sqlite é um módulo nativo e não executa dentro do Jest. Este fake
@@ -11,7 +11,7 @@ function createFakeDatabase() {
   let userVersion = 0;
   const executedStatements: string[] = [];
 
-  const db: MigratableDatabase = {
+  const db: AppDatabase = {
     execAsync: async (source: string) => {
       executedStatements.push(source);
       const match = /PRAGMA user_version\s*=\s*(\d+)/i.exec(source);
@@ -20,6 +20,8 @@ function createFakeDatabase() {
       }
     },
     getFirstAsync: async <T>() => ({ user_version: userVersion }) as T,
+    getAllAsync: async () => [],
+    runAsync: async () => ({ lastInsertRowId: 0, changes: 0 }),
     withTransactionAsync: async (task) => {
       await task();
     },

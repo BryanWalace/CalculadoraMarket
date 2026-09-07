@@ -1,22 +1,11 @@
-import type { SQLiteDatabase } from 'expo-sqlite';
-
 import {
   CREATE_LIST_ITEMS_LIST_ID_INDEX,
   CREATE_LIST_ITEMS_TABLE,
   CREATE_SHOPPING_LISTS_TABLE,
 } from './schema';
+import type { AppDatabase } from './types';
 
-/**
- * Só a fatia de SQLiteDatabase que uma migração precisa. Mantém migrations.ts
- * testável com um banco falso em memória, sem depender do módulo nativo do
- * expo-sqlite (que não roda dentro do Jest).
- */
-export type MigratableDatabase = Pick<
-  SQLiteDatabase,
-  'execAsync' | 'getFirstAsync' | 'withTransactionAsync'
->;
-
-type Migration = (db: MigratableDatabase) => Promise<void>;
+type Migration = (db: AppDatabase) => Promise<void>;
 
 /**
  * Cada entrada é uma migração numerada (índice = versão alvo - 1). Uma
@@ -31,7 +20,7 @@ const migrations: Migration[] = [
   },
 ];
 
-export async function runMigrations(db: MigratableDatabase): Promise<void> {
+export async function runMigrations(db: AppDatabase): Promise<void> {
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   const currentVersion = row?.user_version ?? 0;
 

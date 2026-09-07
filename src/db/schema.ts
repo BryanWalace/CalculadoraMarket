@@ -1,3 +1,27 @@
+import type { Unit } from '../lib/validation';
+
+export interface ShoppingList {
+  id: number;
+  name: string;
+  store: string | null;
+  createdAt: string;
+  finishedAt: string | null;
+  total: number;
+  budget: number | null;
+}
+
+export interface ListItem {
+  id: number;
+  listId: number;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  unit: Unit;
+  subtotal: number;
+  photoUri: string | null;
+  createdAt: string;
+}
+
 /**
  * Nomes de coluna herdados do schema original do pedido; único campo novo é
  * `store` (desvio registrado em docs/spec.md §6, RF-38). Todo valor
