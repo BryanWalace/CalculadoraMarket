@@ -1,5 +1,22 @@
+import { File } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
 import type { ListItem, ShoppingList } from '../../db/schema';
-import { generatePurchaseCsv, generatePurchaseText } from './export';
+import { generatePurchaseCsv, generatePurchaseText, shareExportedPurchase } from './export';
+
+const mockWrite = jest.fn();
+const mockCreate = jest.fn();
+const mockDelete = jest.fn();
+
+jest.mock('expo-file-system', () => ({
+  File: jest.fn(),
+  Paths: { cache: 'file:///cache/' },
+}));
+
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(),
+  shareAsync: jest.fn(),
+}));
 
 const LIST: ShoppingList = {
   id: 1,
@@ -92,5 +109,46 @@ describe('generatePurchaseText', () => {
     const text = generatePurchaseText(LIST, []);
 
     expect(text).toContain('Total: R$ 48,97');
+  });
+});
+
+describe('shareExportedPurchase', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (Sharing.isAvailableAsync as jest.Mock).mockResolvedValue(true);
+    (File as unknown as jest.Mock).mockImplementation((...segments: string[]) => ({
+      uri: segments.join(''),
+      exists: false,
+      create: mockCreate,
+      write: mockWrite,
+      delete: mockDelete,
+    }));
+  });
+
+  it('grava o conteúdo num arquivo temporário e compartilha (RF-50)', async () => {
+    await shareExportedPurchase(LIST, [makeItem({})], 'csv');
+
+    expect(mockCreate).toHaveBeenCalled();
+    expect(mockWrite).toHaveBeenCalledWith(expect.stringContaining('Nome;Quantidade'));
+    expect(Sharing.shareAsync).toHaveBeenCalledWith('file:///cache/Compra no Mercado X.csv');
+  });
+
+  it('usa a extensão .txt para o formato de texto simples', async () => {
+    await shareExportedPurchase(LIST, [makeItem({})], 'text');
+
+    expect(Sharing.shareAsync).toHaveBeenCalledWith('file:///cache/Compra no Mercado X.txt');
+  });
+
+  it('sanitiza caracteres inválidos no nome do arquivo', async () => {
+    await shareExportedPurchase({ ...LIST, name: 'Compra: Mercado / 07-09' }, [], 'csv');
+
+    expect(Sharing.shareAsync).toHaveBeenCalledWith('file:///cache/Compra_ Mercado _ 07-09.csv');
+  });
+
+  it('lança erro amigável quando o compartilhamento não está disponível', async () => {
+    (Sharing.isAvailableAsync as jest.Mock).mockResolvedValue(false);
+
+    await expect(shareExportedPurchase(LIST, [], 'csv')).rejects.toThrow('não disponível');
+    expect(mockWrite).not.toHaveBeenCalled();
   });
 });

@@ -73,7 +73,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-50** — `SummaryCard` no topo do histórico exibindo o resumo do mês. _(RF-45, RF-46, RF-47)_
 - [x] **T-51** — `src/features/history/export.ts`: gerar CSV de uma compra do histórico. _(RF-48)_
 - [x] **T-52** — `src/features/history/export.ts`: gerar texto simples de uma compra do histórico. _(RF-49)_
-- [ ] **T-53** — Compartilhar o arquivo exportado via `expo-sharing`. _(RF-50)_
+- [x] **T-53** — Compartilhar o arquivo exportado via `expo-sharing`. _(RF-50)_
 - [ ] **T-54** — Teste de integração: finalizar compra → aparece no histórico com o total correto.
 
 ## Etapa 5 — Orçamento, tema escuro e polimento

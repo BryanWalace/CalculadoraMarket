@@ -6,6 +6,7 @@ import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native
 import { getListWithItems } from '../../src/db/listsQueries';
 import type { ListItem, ShoppingList } from '../../src/db/schema';
 import { useCartStore } from '../../src/features/cart/store';
+import { shareExportedPurchase } from '../../src/features/history/export';
 import { formatCurrencyBRL, formatDate, formatQuantity } from '../../src/lib/format';
 
 export default function HistoryDetailScreen() {
@@ -57,6 +58,17 @@ export default function HistoryDetailScreen() {
         { text: 'Finalizar carrinho atual', onPress: () => void finalizeActiveAndReopen() },
       ],
     );
+  }
+
+  async function handleExport(format: 'csv' | 'text') {
+    if (!data) {
+      return;
+    }
+    try {
+      await shareExportedPurchase(data.list, data.items, format);
+    } catch {
+      Alert.alert('Não foi possível exportar', 'Tente novamente.');
+    }
   }
 
   if (data === undefined) {
@@ -111,6 +123,24 @@ export default function HistoryDetailScreen() {
         >
           <Text style={styles.reopenButtonText}>Reabrir como carrinho novo</Text>
         </Pressable>
+        <View style={styles.exportRow}>
+          <Pressable
+            onPress={() => handleExport('csv')}
+            accessibilityRole="button"
+            accessibilityLabel="Exportar CSV"
+            style={styles.exportButton}
+          >
+            <Text>Exportar CSV</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => handleExport('text')}
+            accessibilityRole="button"
+            accessibilityLabel="Exportar texto"
+            style={styles.exportButton}
+          >
+            <Text>Exportar texto</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -163,5 +193,15 @@ const styles = StyleSheet.create({
   reopenButtonText: {
     color: '#ffffff',
     fontWeight: 'bold',
+  },
+  exportRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 12,
+  },
+  exportButton: {
+    minHeight: 48,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
   },
 });

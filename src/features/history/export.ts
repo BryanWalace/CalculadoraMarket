@@ -1,3 +1,6 @@
+import { File, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
 import type { ListItem, ShoppingList } from '../../db/schema';
 import { formatCurrencyBRL, formatDate, formatQuantity } from '../../lib/format';
 
@@ -47,4 +50,40 @@ export function generatePurchaseText(list: ShoppingList, items: ListItem[]): str
   ];
 
   return lines.join('\n');
+}
+
+export type ExportFormat = 'csv' | 'text';
+
+function sanitizeFileName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9-_ ]/g, '_') || 'compra';
+}
+
+function extensionFor(format: ExportFormat): string {
+  return format === 'csv' ? 'csv' : 'txt';
+}
+
+/**
+ * RF-50: grava o conteúdo exportado num arquivo temporário e abre o
+ * compartilhamento nativo do sistema (WhatsApp, Drive, e-mail etc.).
+ */
+export async function shareExportedPurchase(
+  list: ShoppingList,
+  items: ListItem[],
+  format: ExportFormat,
+): Promise<void> {
+  const isAvailable = await Sharing.isAvailableAsync();
+  if (!isAvailable) {
+    throw new Error('Compartilhamento não disponível neste aparelho');
+  }
+
+  const content =
+    format === 'csv' ? generatePurchaseCsv(list, items) : generatePurchaseText(list, items);
+  const file = new File(Paths.cache, `${sanitizeFileName(list.name)}.${extensionFor(format)}`);
+  if (file.exists) {
+    file.delete();
+  }
+  file.create();
+  file.write(content);
+
+  await Sharing.shareAsync(file.uri);
 }
