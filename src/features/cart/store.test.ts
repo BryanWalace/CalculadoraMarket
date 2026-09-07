@@ -200,6 +200,41 @@ describe('useCartStore.updateItem', () => {
   });
 });
 
+describe('useCartStore.adjustQuantity', () => {
+  it('aumenta a quantidade e recalcula o subtotal', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, null);
+    const itemId = useCartStore.getState().items[0].id;
+
+    await useCartStore.getState().adjustQuantity(db, itemId, 1);
+
+    const item = useCartStore.getState().items[0];
+    expect(item.quantity).toBe(3);
+    expect(item.subtotal).toBe(5997);
+  });
+
+  it('remove o item quando a quantidade chega a zero (RF-30)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore
+      .getState()
+      .addItem(db, { name: 'Item único', unitPrice: 500, quantity: 1, unit: 'un' }, null);
+    const itemId = useCartStore.getState().items[0].id;
+
+    await useCartStore.getState().adjustQuantity(db, itemId, -1);
+
+    expect(useCartStore.getState().items).toEqual([]);
+  });
+
+  it('não faz nada se o item não existe mais', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+
+    await expect(useCartStore.getState().adjustQuantity(db, 999, 1)).resolves.toBeUndefined();
+  });
+});
+
 describe('useCartStore.removeItem', () => {
   it('remove o item do estado', async () => {
     const db = createInMemoryDatabase();

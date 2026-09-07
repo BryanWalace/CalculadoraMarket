@@ -26,6 +26,8 @@ export interface CartState {
   hydrate: (db: AppDatabase) => Promise<void>;
   addItem: (db: AppDatabase, input: ListItemInput, photoUri: string | null) => Promise<void>;
   updateItem: (db: AppDatabase, id: number, input: ListItemInput) => Promise<void>;
+  /** Só para itens `un` (RF-28/29); remove o item se a quantidade chegar a zero (RF-30). */
+  adjustQuantity: (db: AppDatabase, id: number, delta: number) => Promise<void>;
   removeItem: (db: AppDatabase, id: number) => Promise<void>;
   clearList: (db: AppDatabase) => Promise<void>;
 }
@@ -64,6 +66,24 @@ export const useCartStore = create<CartState>((set, get) => ({
     set((state) => ({
       items: state.items.map((item) => (item.id === id ? updatedItem : item)),
     }));
+  },
+
+  adjustQuantity: async (db, id, delta) => {
+    const item = get().items.find((current) => current.id === id);
+    if (!item) {
+      return;
+    }
+    const newQuantity = item.quantity + delta;
+    if (newQuantity <= 0) {
+      await get().removeItem(db, id);
+      return;
+    }
+    await get().updateItem(db, id, {
+      name: item.name,
+      unitPrice: item.unitPrice,
+      quantity: newQuantity,
+      unit: item.unit,
+    });
   },
 
   removeItem: async (db, id) => {

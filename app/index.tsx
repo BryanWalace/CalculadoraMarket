@@ -18,6 +18,7 @@ export default function CartScreen() {
   const isHydrated = useCartStore((state) => state.isHydrated);
   const items = useCartStore((state) => state.items);
   const hydrate = useCartStore((state) => state.hydrate);
+  const adjustQuantity = useCartStore((state) => state.adjustQuantity);
   const totalCents = useCartStore(selectTotalCents);
   const itemCount = useCartStore(selectItemCount);
   const unitSum = useCartStore(selectUnitSum);
@@ -46,6 +47,7 @@ export default function CartScreen() {
             <ItemCard
               item={item}
               onPress={() => router.push(`/scanner/confirm?itemId=${item.id}`)}
+              onAdjustQuantity={(delta) => adjustQuantity(db, item.id, delta)}
             />
           )}
         />
