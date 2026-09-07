@@ -14,6 +14,7 @@ Carrinho é um app mobile Android que soma o valor de uma compra de mercado em t
 4. **Se a spec se mostrar errada durante a implementação, parar e atualizar a spec primeiro.** A spec é a fonte da verdade; código que diverge dela é bug.
 5. Ideia boa fora do escopo da tarefa atual vai para `docs/backlog.md`, nunca direto para o código.
 6. Perguntar antes de adicionar qualquer dependência nova, justificando por que a biblioteca padrão ou o Expo não resolvem.
+7. **Responder sempre em português do Brasil na conversa com o usuário** — isso é sobre a comunicação com quem está pedindo o trabalho, à parte da regra de Convenções sobre o idioma da interface do app.
 
 ## Stack
 
