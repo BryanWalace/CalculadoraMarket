@@ -1,4 +1,4 @@
-import { multiplyCents, sumCents } from './money';
+import { calculateMonthSummary, multiplyCents, sumCents } from './money';
 
 describe('multiplyCents', () => {
   it('multiplica preço unitário por quantidade inteira', () => {
@@ -43,5 +43,106 @@ describe('sumCents', () => {
     // nunca um acumulador que sobrevive além da lista passada.
     expect(sumCents([100, 200])).toBe(300);
     expect(sumCents([100])).toBe(100);
+  });
+});
+
+describe('calculateMonthSummary', () => {
+  // Meio-dia local evita qualquer risco de virada de data por fuso horário.
+  const localIso = (year: number, monthIndex: number, day: number) =>
+    new Date(year, monthIndex, day, 12).toISOString();
+
+  const referenceDate = new Date(2026, 8, 15); // 15 de setembro de 2026
+
+  it('soma o total do mês corrente e calcula a média por compra (RF-45, RF-46)', () => {
+    const summary = calculateMonthSummary(
+      [
+        { total: 5000, finishedAt: localIso(2026, 8, 5) },
+        { total: 3000, finishedAt: localIso(2026, 8, 12) },
+      ],
+      referenceDate,
+    );
+
+    expect(summary.currentMonthTotalCents).toBe(8000);
+    expect(summary.averagePerPurchaseCents).toBe(4000);
+  });
+
+  it('ignora compras de meses fora do corrente/anterior', () => {
+    const summary = calculateMonthSummary(
+      [
+        { total: 5000, finishedAt: localIso(2026, 8, 5) },
+        { total: 9999, finishedAt: localIso(2026, 6, 1) }, // dois meses atrás
+      ],
+      referenceDate,
+    );
+
+    expect(summary.currentMonthTotalCents).toBe(5000);
+  });
+
+  it('retorna zero (não divide por zero) quando não há compras no mês corrente', () => {
+    const summary = calculateMonthSummary([], referenceDate);
+
+    expect(summary.currentMonthTotalCents).toBe(0);
+    expect(summary.averagePerPurchaseCents).toBe(0);
+  });
+
+  it('calcula o total do mês anterior e a diferença em centavos (RF-47)', () => {
+    const summary = calculateMonthSummary(
+      [
+        { total: 8000, finishedAt: localIso(2026, 8, 5) },
+        { total: 6000, finishedAt: localIso(2026, 7, 20) },
+      ],
+      referenceDate,
+    );
+
+    expect(summary.previousMonthTotalCents).toBe(6000);
+    expect(summary.diffCents).toBe(2000);
+  });
+
+  it('calcula a variação percentual frente ao mês anterior', () => {
+    const summary = calculateMonthSummary(
+      [
+        { total: 12000, finishedAt: localIso(2026, 8, 5) },
+        { total: 10000, finishedAt: localIso(2026, 7, 20) },
+      ],
+      referenceDate,
+    );
+
+    expect(summary.diffPercent).toBe(20); // (12000 - 10000) / 10000 * 100
+  });
+
+  it('diffPercent é null quando o mês anterior não teve nenhuma compra', () => {
+    const summary = calculateMonthSummary(
+      [{ total: 5000, finishedAt: localIso(2026, 8, 5) }],
+      referenceDate,
+    );
+
+    expect(summary.previousMonthTotalCents).toBe(0);
+    expect(summary.diffPercent).toBeNull();
+  });
+
+  it('lida corretamente com a virada de ano (janeiro -> dezembro do ano anterior)', () => {
+    const januaryReference = new Date(2026, 0, 15); // 15 de janeiro de 2026
+    const summary = calculateMonthSummary(
+      [
+        { total: 5000, finishedAt: localIso(2026, 0, 10) },
+        { total: 3000, finishedAt: localIso(2025, 11, 20) },
+      ],
+      januaryReference,
+    );
+
+    expect(summary.currentMonthTotalCents).toBe(5000);
+    expect(summary.previousMonthTotalCents).toBe(3000);
+  });
+
+  it('ignora compras com finishedAt null (carrinho ainda em andamento, não deveria chegar aqui)', () => {
+    const summary = calculateMonthSummary(
+      [
+        { total: 5000, finishedAt: localIso(2026, 8, 5) },
+        { total: 999999, finishedAt: null },
+      ],
+      referenceDate,
+    );
+
+    expect(summary.currentMonthTotalCents).toBe(5000);
   });
 });
