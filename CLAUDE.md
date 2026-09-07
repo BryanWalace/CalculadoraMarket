@@ -27,7 +27,7 @@ Carrinho é um app mobile Android que soma o valor de uma compra de mercado em t
 - `expo-file-system` + `expo-sharing` — exportação e compartilhamento de arquivos
 - `zod` — validação de toda entrada antes de persistir (preço, quantidade, nome, inclusive dados vindos do OCR)
 - Estilização: `StyleSheet` nativo ou NativeWind — sem bibliotecas de UI pesadas
-- Testes: Jest (preset `jest-expo`) + React Native Testing Library — decisão registrada em `docs/plan.md` ADR-06
+- Testes: Jest (preset `jest-expo`) + React Native Testing Library v14 — decisão registrada em `docs/plan.md` ADR-06. **Atenção:** nessa versão, `render()` é assíncrono (usa a API `createRoot` do `test-renderer`, compatível com React 19) — sempre `await render(...)`, nunca desestruturar o retorno direto.
 
 ## Comandos
 
