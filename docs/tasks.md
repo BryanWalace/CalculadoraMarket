@@ -11,7 +11,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 
 ## Etapa 1 — Fundação do projeto
 
-- [ ] **T-01** — Criar projeto Expo (template TypeScript), configurar `tsconfig.json` em `strict`, remover boilerplate de exemplo.
+- [x] **T-01** — Criar projeto Expo (template TypeScript), configurar `tsconfig.json` em `strict`, remover boilerplate de exemplo.
 - [ ] **T-02** — Configurar ESLint + Prettier com regras que bloqueiam `any` e `@ts-ignore`.
 - [ ] **T-03** — Configurar Jest (`jest-expo`) + React Native Testing Library; um teste smoke trivial validando o setup. *(plan.md ADR-06)*
 - [ ] **T-04** — Configurar Husky + lint-staged rodando lint e testes no pre-commit.
