@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BudgetDialog } from '../src/features/cart/components/BudgetDialog';
+import { BudgetProgressBar } from '../src/features/cart/components/BudgetProgressBar';
 import { EmptyState } from '../src/features/cart/components/EmptyState';
 import { FinalizeDialog } from '../src/features/cart/components/FinalizeDialog';
 import { ItemCard } from '../src/features/cart/components/ItemCard';
@@ -116,6 +117,11 @@ export default function CartScreen() {
           {formatCurrencyBRL(totalCents)}
         </Text>
         <Text>{formatCartSummary(itemCount, unitSum)}</Text>
+        {activeList?.budget != null ? (
+          <View style={styles.progressBarWrapper}>
+            <BudgetProgressBar totalCents={totalCents} budgetCents={activeList.budget} />
+          </View>
+        ) : null}
         <Pressable
           onPress={() => setIsEditingBudget(true)}
           accessibilityRole="button"
@@ -201,6 +207,10 @@ const styles = StyleSheet.create({
   total: {
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  progressBarWrapper: {
+    width: '100%',
+    marginTop: 8,
   },
   budgetButton: {
     marginTop: 8,

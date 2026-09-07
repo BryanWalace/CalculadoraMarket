@@ -160,6 +160,30 @@ describe('CartScreen', () => {
     expect(getByText('Orçamento: R$ 100,00')).toBeTruthy();
   });
 
+  it('não mostra barra de progresso sem orçamento definido', async () => {
+    useCartStore.setState({ isHydrated: true, activeList: ACTIVE_LIST, items: [] });
+
+    const { queryByLabelText } = await render(<CartScreen />);
+
+    expect(queryByLabelText('Progresso do orçamento')).toBeNull();
+  });
+
+  it('mostra barra de progresso do total em relação ao orçamento (RF-35)', async () => {
+    useCartStore.setState({
+      isHydrated: true,
+      activeList: { ...ACTIVE_LIST, budget: 10000 },
+      items: [makeItem({ subtotal: 3998 })],
+    });
+
+    const { getByLabelText } = await render(<CartScreen />);
+
+    expect(getByLabelText('Progresso do orçamento').props.accessibilityValue).toEqual({
+      min: 0,
+      max: 10000,
+      now: 3998,
+    });
+  });
+
   it('abre o diálogo de orçamento e chama setBudget ao salvar (RF-34)', async () => {
     const setBudget = jest.fn().mockResolvedValue(undefined);
     useCartStore.setState({
