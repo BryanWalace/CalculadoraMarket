@@ -34,7 +34,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-17** — Tela de confirmação em modo manual: campos nome/preço/unidade/quantidade, ajuste por −/+ e digitação, subtotal ao vivo, validação zod antes de habilitar "Adicionar", botões Adicionar/Cancelar. _(RF-06, RF-07, RF-08, RF-26, RF-27)_
 - [x] **T-18** — Restringir quantidade a inteiro quando `un` e decimal quando `kg` no campo de quantidade. _(RF-09)_
 - [x] **T-19** — `CartScreen`: lista de itens, estado vazio, total fixo no rodapé com contagem de itens/unidades, botão flutuante de câmera. _(RF-01, RF-02, RF-03, RF-04, RF-05)_
-- [ ] **T-20** — Editar item existente: toque no item reabre a tela de confirmação pré-preenchida em modo edição. _(RF-10)_
+- [x] **T-20** — Editar item existente: toque no item reabre a tela de confirmação pré-preenchida em modo edição. _(RF-10)_
 - [ ] **T-21** — Botões rápidos −/+ no card só para itens `un` (itens `kg` não têm botão rápido); remoção automática ao chegar a zero. _(RF-28, RF-29, RF-30)_
 - [ ] **T-22** — Excluir item por swipe/lixeira com snackbar de desfazer de 5s (soft-delete agendado); exclusão definitiva apaga a foto associada. _(RF-31, RF-32, RF-56, plan.md ADR-05)_
 - [ ] **T-23** — Limpar lista inteira com diálogo de confirmação prévio; apaga as fotos dos itens removidos. _(RF-33, RF-56)_

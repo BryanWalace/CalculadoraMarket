@@ -42,7 +42,12 @@ export default function CartScreen() {
         <FlatList
           data={items}
           keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => <ItemCard item={item} />}
+          renderItem={({ item }) => (
+            <ItemCard
+              item={item}
+              onPress={() => router.push(`/scanner/confirm?itemId=${item.id}`)}
+            />
+          )}
         />
       )}
 

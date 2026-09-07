@@ -1,23 +1,32 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { ListItem } from '../../../db/schema';
 import { formatCurrencyBRL, formatQuantity } from '../../../lib/format';
 
 interface ItemCardProps {
   item: ListItem;
+  onPress: () => void;
 }
 
-export function ItemCard({ item }: ItemCardProps) {
+export function ItemCard({ item, onPress }: ItemCardProps) {
   return (
-    <View style={styles.card} accessibilityLabel={`Item ${item.name}`}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text>
-        {formatQuantity(item.quantity, item.unit)} {item.unit} × {formatCurrencyBRL(item.unitPrice)}
-      </Text>
-      <Text style={styles.subtotal} accessibilityLabel={`Subtotal de ${item.name}`}>
-        {formatCurrencyBRL(item.subtotal)}
-      </Text>
-    </View>
+    <Pressable
+      style={styles.card}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Item ${item.name}, toque para editar`}
+    >
+      <View>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text>
+          {formatQuantity(item.quantity, item.unit)} {item.unit} ×{' '}
+          {formatCurrencyBRL(item.unitPrice)}
+        </Text>
+        <Text style={styles.subtotal} accessibilityLabel={`Subtotal de ${item.name}`}>
+          {formatCurrencyBRL(item.subtotal)}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
