@@ -118,6 +118,11 @@ export function createInMemoryDatabase(): AppDatabase {
         const [listId] = params as [number];
         return [...items.values()].filter((row) => row.list_id === listId);
       }
+      if (sql.includes('shopping_lists') && sql.includes('finished_at IS NOT NULL')) {
+        return [...lists.values()]
+          .filter((row) => row.finished_at !== null)
+          .sort((a, b) => String(b.finished_at).localeCompare(String(a.finished_at)));
+      }
       throw new Error(`getAllAsync não implementado no fake: ${sql}`);
     }),
   };
