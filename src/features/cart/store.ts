@@ -151,12 +151,21 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   clearList: async (db) => {
-    const { activeList } = get();
+    const { activeList, items, pendingDeletion } = get();
     if (!activeList) {
       return;
     }
+
+    if (pendingDeletion) {
+      clearTimeout(pendingDeletion.timeoutId);
+      deletePhotoIfExists(pendingDeletion.item.photoUri);
+    }
+    for (const item of items) {
+      deletePhotoIfExists(item.photoUri);
+    }
+
     await deleteItemsByListId(db, activeList.id);
-    set({ items: [] });
+    set({ items: [], pendingDeletion: null });
   },
 }));
 

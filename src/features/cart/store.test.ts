@@ -1,5 +1,6 @@
 import type { AppDatabase } from '../../db/types';
 import type { ListItem } from '../../db/schema';
+import { deletePhotoIfExists } from '../../lib/photoStorage';
 import type { ListItemInput } from '../../lib/validation';
 import {
   type CartState,
@@ -8,6 +9,8 @@ import {
   selectUnitSum,
   useCartStore,
 } from './store';
+
+jest.mock('../../lib/photoStorage', () => ({ deletePhotoIfExists: jest.fn() }));
 
 /**
  * Fake de banco em memória, real o bastante para exercitar a store por
@@ -120,6 +123,7 @@ const validInput: ListItemInput = {
 
 beforeEach(() => {
   useCartStore.setState({ activeList: null, items: [], isHydrated: false });
+  (deletePhotoIfExists as jest.Mock).mockClear();
 });
 
 describe('useCartStore.hydrate', () => {
@@ -324,6 +328,37 @@ describe('useCartStore.clearList', () => {
     await useCartStore.getState().clearList(db);
 
     expect(useCartStore.getState().items).toEqual([]);
+  });
+
+  it('apaga a foto de cada item removido (RF-56)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, 'file:///a.jpg');
+    await useCartStore
+      .getState()
+      .addItem(db, { name: 'Feijão', unitPrice: 899, quantity: 1, unit: 'un' }, 'file:///b.jpg');
+
+    await useCartStore.getState().clearList(db);
+
+    expect(deletePhotoIfExists).toHaveBeenCalledWith('file:///a.jpg');
+    expect(deletePhotoIfExists).toHaveBeenCalledWith('file:///b.jpg');
+  });
+
+  it('cancela e finaliza uma exclusão pendente junto com o resto da lista', async () => {
+    jest.useFakeTimers();
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, 'file:///pendente.jpg');
+    const itemId = useCartStore.getState().items[0].id;
+
+    useCartStore.getState().scheduleRemoval(db, itemId);
+    await useCartStore.getState().clearList(db);
+
+    expect(useCartStore.getState().pendingDeletion).toBeNull();
+    expect(deletePhotoIfExists).toHaveBeenCalledWith('file:///pendente.jpg');
+
+    await jest.advanceTimersByTimeAsync(5000);
+    jest.useRealTimers();
   });
 });
 

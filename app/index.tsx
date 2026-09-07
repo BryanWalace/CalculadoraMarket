@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '../src/features/cart/components/EmptyState';
 import { ItemCard } from '../src/features/cart/components/ItemCard';
@@ -23,6 +23,7 @@ export default function CartScreen() {
   const scheduleRemoval = useCartStore((state) => state.scheduleRemoval);
   const undoRemoval = useCartStore((state) => state.undoRemoval);
   const pendingDeletion = useCartStore((state) => state.pendingDeletion);
+  const clearList = useCartStore((state) => state.clearList);
   const totalCents = useCartStore(selectTotalCents);
   const itemCount = useCartStore(selectItemCount);
   const unitSum = useCartStore(selectUnitSum);
@@ -30,6 +31,13 @@ export default function CartScreen() {
   useEffect(() => {
     hydrate(db);
   }, [db, hydrate]);
+
+  function handleClearList() {
+    Alert.alert('Limpar lista', 'Isso remove todos os itens do carrinho. Tem certeza?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Limpar', style: 'destructive', onPress: () => clearList(db) },
+    ]);
+  }
 
   if (!isHydrated) {
     return (
@@ -44,18 +52,28 @@ export default function CartScreen() {
       {items.length === 0 ? (
         <EmptyState />
       ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <ItemCard
-              item={item}
-              onPress={() => router.push(`/scanner/confirm?itemId=${item.id}`)}
-              onAdjustQuantity={(delta) => adjustQuantity(db, item.id, delta)}
-              onDelete={() => scheduleRemoval(db, item.id)}
-            />
-          )}
-        />
+        <>
+          <Pressable
+            onPress={handleClearList}
+            accessibilityRole="button"
+            accessibilityLabel="Limpar lista"
+            style={styles.clearButton}
+          >
+            <Text>Limpar lista</Text>
+          </Pressable>
+          <FlatList
+            data={items}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <ItemCard
+                item={item}
+                onPress={() => router.push(`/scanner/confirm?itemId=${item.id}`)}
+                onAdjustQuantity={(delta) => adjustQuantity(db, item.id, delta)}
+                onDelete={() => scheduleRemoval(db, item.id)}
+              />
+            )}
+          />
+        </>
       )}
 
       {pendingDeletion ? (
@@ -88,6 +106,12 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  clearButton: {
+    alignSelf: 'flex-end',
+    padding: 16,
+    minHeight: 48,
+    justifyContent: 'center',
   },
   centered: {
     flex: 1,

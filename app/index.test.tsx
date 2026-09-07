@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 import { useCartStore } from '../src/features/cart/store';
 import type { ListItem, ShoppingList } from '../src/db/schema';
@@ -89,5 +90,24 @@ describe('CartScreen', () => {
     await fireEvent.press(getByLabelText('Fotografar etiqueta'));
 
     expect(mockPush).toHaveBeenCalledWith('/scanner/camera');
+  });
+
+  it('pede confirmação antes de limpar a lista e só limpa se confirmado (RF-33)', async () => {
+    const clearList = jest.fn().mockResolvedValue(undefined);
+    useCartStore.setState({
+      isHydrated: true,
+      activeList: ACTIVE_LIST,
+      items: [makeItem({})],
+      clearList,
+    });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      buttons?.find((button) => button.text === 'Limpar')?.onPress?.();
+    });
+
+    const { getByLabelText } = await render(<CartScreen />);
+    await fireEvent.press(getByLabelText('Limpar lista'));
+
+    expect(alertSpy).toHaveBeenCalled();
+    expect(clearList).toHaveBeenCalled();
   });
 });
