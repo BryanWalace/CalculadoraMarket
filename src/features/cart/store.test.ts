@@ -1,5 +1,6 @@
 import type { ListItem } from '../../db/schema';
 import { createInMemoryDatabase } from '../../db/inMemoryTestDatabase';
+import { notifyBudgetExceeded, notifyItemAdded } from '../../lib/haptics';
 import { deletePhotoIfExists } from '../../lib/photoStorage';
 import type { ListItemInput } from '../../lib/validation';
 import {
@@ -11,6 +12,10 @@ import {
 } from './store';
 
 jest.mock('../../lib/photoStorage', () => ({ deletePhotoIfExists: jest.fn() }));
+jest.mock('../../lib/haptics', () => ({
+  notifyItemAdded: jest.fn(),
+  notifyBudgetExceeded: jest.fn(),
+}));
 
 const validInput: ListItemInput = {
   name: 'Arroz',
@@ -22,6 +27,8 @@ const validInput: ListItemInput = {
 beforeEach(() => {
   useCartStore.setState({ activeList: null, items: [], isHydrated: false });
   (deletePhotoIfExists as jest.Mock).mockClear();
+  (notifyItemAdded as jest.Mock).mockClear();
+  (notifyBudgetExceeded as jest.Mock).mockClear();
 });
 
 describe('useCartStore.hydrate', () => {
@@ -124,6 +131,40 @@ describe('useCartStore.addItem', () => {
     } as ListItemInput;
 
     await expect(useCartStore.getState().addItem(db, invalidInput, null)).rejects.toThrow();
+  });
+
+  it('dispara feedback tátil leve ao adicionar (RF-59)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+
+    await useCartStore.getState().addItem(db, validInput, null);
+
+    expect(notifyItemAdded).toHaveBeenCalledTimes(1);
+    expect(notifyBudgetExceeded).not.toHaveBeenCalled();
+  });
+
+  it('dispara feedback de orçamento ultrapassado só no item que faz o total passar do limite (RF-59)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().setBudget(db, 3000);
+
+    await useCartStore.getState().addItem(db, validInput, null); // 1999*2 = 3998 > 3000
+    expect(notifyBudgetExceeded).toHaveBeenCalledTimes(1);
+
+    await useCartStore
+      .getState()
+      .addItem(db, { name: 'Feijão', unitPrice: 100, quantity: 1, unit: 'un' }, null);
+    // já estava acima do orçamento antes deste segundo item — não dispara de novo.
+    expect(notifyBudgetExceeded).toHaveBeenCalledTimes(1);
+  });
+
+  it('não dispara feedback de orçamento ultrapassado quando o carrinho não tem orçamento definido', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+
+    await useCartStore.getState().addItem(db, validInput, null);
+
+    expect(notifyBudgetExceeded).not.toHaveBeenCalled();
   });
 });
 

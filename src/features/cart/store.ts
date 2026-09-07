@@ -16,6 +16,7 @@ import {
 } from '../../db/listsQueries';
 import type { ListItem, ShoppingList } from '../../db/schema';
 import type { AppDatabase } from '../../db/types';
+import { notifyBudgetExceeded, notifyItemAdded } from '../../lib/haptics';
 import { sumCents } from '../../lib/money';
 import { deletePhotoIfExists } from '../../lib/photoStorage';
 import {
@@ -89,13 +90,24 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   addItem: async (db, input, photoUri) => {
-    const { activeList } = get();
+    const { activeList, items } = get();
     if (!activeList) {
       throw new Error('O carrinho ainda não foi hidratado');
     }
     const validInput = listItemInputSchema.parse(input);
     const newItem = await addItemQuery(db, activeList.id, validInput, photoUri);
+    const totalBefore = sumCents(items.map((item) => item.subtotal));
     set((state) => ({ items: [newItem, ...state.items] }));
+
+    notifyItemAdded();
+    const totalAfter = totalBefore + newItem.subtotal;
+    if (
+      activeList.budget != null &&
+      totalBefore <= activeList.budget &&
+      totalAfter > activeList.budget
+    ) {
+      notifyBudgetExceeded();
+    }
   },
 
   updateItem: async (db, id, input) => {
