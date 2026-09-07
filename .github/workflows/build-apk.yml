@@ -1,0 +1,50 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - run: npm ci
+
+      - name: Gerar projeto Android nativo
+        run: npx expo prebuild --platform android
+
+      - name: Compilar APK de debug
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Publicar como release "apk-latest"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete apk-latest --yes --cleanup-tag || true
+          gh release create apk-latest \
+            android/app/build/outputs/apk/debug/app-debug.apk \
+            --title "Carrinho — último build" \
+            --notes "APK de debug gerado automaticamente pelo GitHub Actions a partir do commit ${{ github.sha }}. Instale habilitando \"instalar apps de fontes desconhecidas\" no Android." \
+            --latest
