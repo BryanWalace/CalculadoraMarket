@@ -203,4 +203,17 @@ describe('HistoryDetailScreen', () => {
 
     await waitFor(() => expect(getByText('Compra não encontrada.')).toBeTruthy());
   });
+
+  it('mostra erro com opção de tentar novamente quando o carregamento falha (RF-61)', async () => {
+    mockGetListWithItems.mockRejectedValue(new Error('falha no banco'));
+
+    const { getByText, getByLabelText } = await render(<HistoryDetailScreen />);
+
+    await waitFor(() => expect(getByText('Não foi possível carregar a compra.')).toBeTruthy());
+
+    mockGetListWithItems.mockResolvedValue({ list: LIST, items: [makeItem({})] });
+    await fireEvent.press(getByLabelText('Tentar novamente'));
+
+    await waitFor(() => expect(getByText('Compra no Mercado X')).toBeTruthy());
+  });
 });

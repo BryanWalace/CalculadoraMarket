@@ -37,10 +37,16 @@ export default function CartScreen() {
   const unitSum = useCartStore(selectUnitSum);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [hydrateError, setHydrateError] = useState(false);
 
   useEffect(() => {
-    hydrate(db);
+    hydrate(db).catch(() => setHydrateError(true));
   }, [db, hydrate]);
+
+  function handleRetryHydrate() {
+    setHydrateError(false);
+    hydrate(db).catch(() => setHydrateError(true));
+  }
 
   function handleClearList() {
     Alert.alert('Limpar lista', 'Isso remove todos os itens do carrinho. Tem certeza?', [
@@ -57,6 +63,22 @@ export default function CartScreen() {
   async function handleBudgetConfirm(budgetCents: number | null) {
     await setBudget(db, budgetCents);
     setIsEditingBudget(false);
+  }
+
+  if (hydrateError) {
+    return (
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Não foi possível abrir o carrinho.</Text>
+        <Pressable
+          onPress={handleRetryHydrate}
+          accessibilityRole="button"
+          accessibilityLabel="Tentar novamente"
+          style={styles.retryButton}
+        >
+          <Text style={{ color: colors.primary }}>Tentar novamente</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   if (!isHydrated) {
@@ -216,6 +238,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+  },
+  retryButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   footer: {
     padding: 16,

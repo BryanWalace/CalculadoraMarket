@@ -43,6 +43,11 @@ export default function CameraScreen() {
       <View style={styles.cameraContainer}>
         <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
         <CaptureGuideOverlay onFrameLayout={setFrameBounds} />
+        {isCapturing ? (
+          <View style={styles.analyzingBanner} accessibilityRole="alert">
+            <Text style={styles.analyzingText}>Analisando etiqueta…</Text>
+          </View>
+        ) : null}
         <Pressable
           onPress={handleCapture}
           disabled={!frameBounds || isCapturing}
@@ -156,5 +161,18 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: '#ffffff',
+  },
+  analyzingBanner: {
+    position: 'absolute',
+    top: 48,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  analyzingText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
 });

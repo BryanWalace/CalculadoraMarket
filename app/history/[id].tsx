@@ -18,10 +18,21 @@ export default function HistoryDetailScreen() {
   const [data, setData] = useState<{ list: ShoppingList; items: ListItem[] } | null | undefined>(
     undefined,
   );
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    getListWithItems(db, Number(id)).then(setData);
+    getListWithItems(db, Number(id))
+      .then(setData)
+      .catch(() => setHasError(true));
   }, [db, id]);
+
+  function handleRetry() {
+    setHasError(false);
+    setData(undefined);
+    getListWithItems(db, Number(id))
+      .then(setData)
+      .catch(() => setHasError(true));
+  }
 
   async function performReopen() {
     await reopenFromHistory(db, Number(id));
@@ -71,6 +82,22 @@ export default function HistoryDetailScreen() {
     } catch {
       Alert.alert('Não foi possível exportar', 'Tente novamente.');
     }
+  }
+
+  if (hasError) {
+    return (
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Não foi possível carregar a compra.</Text>
+        <Pressable
+          onPress={handleRetry}
+          accessibilityRole="button"
+          accessibilityLabel="Tentar novamente"
+          style={styles.retryButton}
+        >
+          <Text style={{ color: colors.primary }}>Tentar novamente</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   if (data === undefined) {
@@ -165,6 +192,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+  },
+  retryButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   header: {
     padding: 16,

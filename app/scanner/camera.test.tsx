@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
 import CameraScreen from './camera';
@@ -165,6 +165,34 @@ describe('CameraScreen', () => {
 
     expect(alertSpy).toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('mostra "Analisando etiqueta…" durante a captura/OCR e some ao terminar (RF-61)', async () => {
+    mockPermission = { granted: true, canAskAgain: true };
+    let resolveScan: (value: unknown) => void;
+    mockScanLabel.mockReturnValue(
+      new Promise((resolve) => {
+        resolveScan = resolve;
+      }),
+    );
+
+    const { getByLabelText, queryByText, getByText } = await render(<CameraScreen />);
+    await fireEvent(getByLabelText('Moldura de enquadramento do preço'), 'layout', {
+      nativeEvent: { layout: { x: 40, y: 300, width: 320, height: 120 } },
+    });
+    expect(queryByText('Analisando etiqueta…')).toBeNull();
+
+    // Não podemos aguardar fireEvent.press aqui: o handler só resolve
+    // depois de scanLabel, e é exatamente o estado intermediário (antes
+    // disso) que este teste precisa observar.
+    void fireEvent.press(getByLabelText('Fotografar etiqueta'));
+    await waitFor(() => expect(getByText('Analisando etiqueta…')).toBeTruthy());
+
+    resolveScan!({
+      photoUri: 'file:///document/etiqueta-123.jpg',
+      parsed: { name: 'Arroz', priceCents: 1000, unit: 'un', confident: true },
+    });
+    await waitFor(() => expect(queryByText('Analisando etiqueta…')).toBeNull());
   });
 
   it('oferece "Preencher manualmente" no aviso de falha, sem travar o usuário (T-40)', async () => {

@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { listFinishedLists } from '../../src/db/listsQueries';
 import type { ShoppingList } from '../../src/db/schema';
@@ -14,10 +14,37 @@ export default function HistoryScreen() {
   const db = useSQLiteContext();
   const colors = useAppColors();
   const [lists, setLists] = useState<ShoppingList[] | null>(null);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    listFinishedLists(db).then(setLists);
+    listFinishedLists(db)
+      .then(setLists)
+      .catch(() => setHasError(true));
   }, [db]);
+
+  function handleRetry() {
+    setHasError(false);
+    setLists(null);
+    listFinishedLists(db)
+      .then(setLists)
+      .catch(() => setHasError(true));
+  }
+
+  if (hasError) {
+    return (
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Não foi possível carregar o histórico.</Text>
+        <Pressable
+          onPress={handleRetry}
+          accessibilityRole="button"
+          accessibilityLabel="Tentar novamente"
+          style={styles.retryButton}
+        >
+          <Text style={{ color: colors.primary }}>Tentar novamente</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   if (lists === null) {
     return (
@@ -64,5 +91,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  retryButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
 });

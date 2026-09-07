@@ -81,6 +81,19 @@ describe('HistoryScreen', () => {
     expect(mockPush).toHaveBeenCalledWith('/history/2');
   });
 
+  it('mostra erro com opção de tentar novamente quando o carregamento falha (RF-61)', async () => {
+    mockListFinishedLists.mockRejectedValue(new Error('falha no banco'));
+
+    const { getByText, getByLabelText } = await render(<HistoryScreen />);
+
+    await waitFor(() => expect(getByText('Não foi possível carregar o histórico.')).toBeTruthy());
+
+    mockListFinishedLists.mockResolvedValue([]);
+    await fireEvent.press(getByLabelText('Tentar novamente'));
+
+    await waitFor(() => expect(getByText('Nenhuma compra finalizada ainda')).toBeTruthy());
+  });
+
   it('mostra o SummaryCard com o resumo do mês corrente no topo (RF-45, RF-46, RF-47)', async () => {
     const thisMonthIso = new Date(now.getFullYear(), now.getMonth(), 10, 12).toISOString();
     const thisMonthList: ShoppingList = { ...NEWER, id: 3, total: 10000, finishedAt: thisMonthIso };

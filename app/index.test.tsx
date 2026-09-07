@@ -11,8 +11,10 @@ jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
 }));
 
+const mockDb = {};
+
 jest.mock('expo-sqlite', () => ({
-  useSQLiteContext: () => ({}),
+  useSQLiteContext: () => mockDb,
 }));
 
 const ACTIVE_LIST: ShoppingList = {
@@ -55,6 +57,23 @@ describe('CartScreen', () => {
     const { getByText } = await render(<CartScreen />);
 
     expect(getByText('Carregando…')).toBeTruthy();
+  });
+
+  it('mostra erro com opção de tentar novamente quando a hidratação falha (RF-61)', async () => {
+    const hydrate = jest.fn().mockRejectedValue(new Error('falha no banco'));
+    useCartStore.setState({ isHydrated: false, hydrate });
+
+    const { getByText, getByLabelText } = await render(<CartScreen />);
+
+    await waitFor(() => expect(getByText('Não foi possível abrir o carrinho.')).toBeTruthy());
+
+    hydrate.mockImplementation(() => {
+      useCartStore.setState({ isHydrated: true, activeList: ACTIVE_LIST, items: [] });
+      return Promise.resolve();
+    });
+    await fireEvent.press(getByLabelText('Tentar novamente'));
+
+    await waitFor(() => expect(getByText('Seu carrinho está vazio')).toBeTruthy());
   });
 
   it('mostra o estado vazio quando não há itens', async () => {

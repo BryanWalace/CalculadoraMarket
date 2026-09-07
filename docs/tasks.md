@@ -86,6 +86,6 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-60** — Tela de "Privacidade" explicando que nenhum dado sai do aparelho. _(RF-53)_
 - [x] **T-61** — Auditoria de acessibilidade: `accessibilityLabel`/`accessibilityRole` e alvo de toque mínimo 48dp em todo controle interativo. _(RF-57)_
 - [x] **T-62** — Verificar que o layout respeita o tamanho de fonte do sistema sem quebrar. _(RF-58)_ ⚠️ auditoria estática (sem dispositivo real neste ambiente)
-- [ ] **T-63** — Auditoria final de estados vazio/carregamento/erro em todas as telas relevantes. _(RF-61)_
+- [x] **T-63** — Auditoria final de estados vazio/carregamento/erro em todas as telas relevantes. _(RF-61)_
 - [ ] **T-64** — Rodar `npm audit`, revisar dependências, confirmar zero chamada de rede no código.
 - [ ] **T-65** — Escrever `README.md`: como rodar, como gerar build Android, permissões usadas.
