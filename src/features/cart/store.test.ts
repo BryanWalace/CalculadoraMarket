@@ -1,5 +1,5 @@
-import type { AppDatabase } from '../../db/types';
 import type { ListItem } from '../../db/schema';
+import { createInMemoryDatabase } from '../../db/inMemoryTestDatabase';
 import { deletePhotoIfExists } from '../../lib/photoStorage';
 import type { ListItemInput } from '../../lib/validation';
 import {
@@ -11,108 +11,6 @@ import {
 } from './store';
 
 jest.mock('../../lib/photoStorage', () => ({ deletePhotoIfExists: jest.fn() }));
-
-/**
- * Fake de banco em memória, real o bastante para exercitar a store por
- * cima das queries de verdade (createList, addItem, updateItem, etc.),
- * sem precisar do módulo nativo do expo-sqlite (não roda no Jest).
- */
-function createInMemoryDatabase(): AppDatabase {
-  let nextListId = 1;
-  let nextItemId = 1;
-  const lists = new Map<number, Record<string, unknown>>();
-  const items = new Map<number, Record<string, unknown>>();
-
-  return {
-    execAsync: jest.fn(async () => undefined),
-    withTransactionAsync: jest.fn(async (task) => {
-      await task();
-    }),
-    runAsync: jest.fn(async (sql: string, ...params: unknown[]) => {
-      if (sql.includes('INSERT INTO shopping_lists')) {
-        const [name, createdAt] = params;
-        const id = nextListId++;
-        lists.set(id, {
-          id,
-          name,
-          store: null,
-          created_at: createdAt,
-          finished_at: null,
-          total: 0,
-          budget: null,
-        });
-        return { lastInsertRowId: id, changes: 1 };
-      }
-      if (sql.includes('INSERT INTO list_items')) {
-        const [listId, name, unitPrice, quantity, unit, subtotal, photoUri, createdAt] = params;
-        const id = nextItemId++;
-        items.set(id, {
-          id,
-          list_id: listId,
-          name,
-          unit_price: unitPrice,
-          quantity,
-          unit,
-          subtotal,
-          photo_uri: photoUri,
-          created_at: createdAt,
-        });
-        return { lastInsertRowId: id, changes: 1 };
-      }
-      if (sql.includes('UPDATE list_items')) {
-        const [name, unitPrice, quantity, unit, subtotal, id] = params as [
-          string,
-          number,
-          number,
-          string,
-          number,
-          number,
-        ];
-        const row = items.get(id);
-        if (row) {
-          Object.assign(row, {
-            name,
-            unit_price: unitPrice,
-            quantity,
-            unit,
-            subtotal,
-          });
-        }
-        return { lastInsertRowId: 0, changes: row ? 1 : 0 };
-      }
-      if (sql.includes('DELETE FROM list_items WHERE list_id')) {
-        const [listId] = params as [number];
-        for (const [id, row] of items) {
-          if (row.list_id === listId) items.delete(id);
-        }
-        return { lastInsertRowId: 0, changes: 1 };
-      }
-      if (sql.includes('DELETE FROM list_items')) {
-        const [id] = params as [number];
-        const existed = items.delete(id);
-        return { lastInsertRowId: 0, changes: existed ? 1 : 0 };
-      }
-      throw new Error(`runAsync não implementado no fake: ${sql}`);
-    }),
-    getFirstAsync: jest.fn(async (sql: string, ...params: unknown[]) => {
-      if (sql.includes('shopping_lists') && sql.includes('finished_at IS NULL')) {
-        return [...lists.values()].find((row) => row.finished_at === null) ?? null;
-      }
-      if (sql.includes('FROM list_items WHERE id')) {
-        const [id] = params as [number];
-        return items.get(id) ?? null;
-      }
-      throw new Error(`getFirstAsync não implementado no fake: ${sql}`);
-    }),
-    getAllAsync: jest.fn(async (sql: string, ...params: unknown[]) => {
-      if (sql.includes('list_items') && sql.includes('list_id')) {
-        const [listId] = params as [number];
-        return [...items.values()].filter((row) => row.list_id === listId);
-      }
-      throw new Error(`getAllAsync não implementado no fake: ${sql}`);
-    }),
-  };
-}
 
 const validInput: ListItemInput = {
   name: 'Arroz',

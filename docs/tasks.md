@@ -39,7 +39,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-22** — Excluir item por lixeira (swipe adiado, ver `docs/backlog.md`) com snackbar de desfazer de 5s (soft-delete agendado); exclusão definitiva apaga a foto associada. _(RF-31, RF-32, RF-56, plan.md ADR-05)_
 - [x] **T-23** — Limpar lista inteira com diálogo de confirmação prévio; apaga as fotos dos itens removidos. _(RF-33, RF-56)_
 - [x] **T-24** — Persistência automática do carrinho a cada alteração + restauração do carrinho e do histórico ao reabrir o app. _(RF-51, RF-52)_
-- [ ] **T-25** — Teste de integração: adicionar item manualmente → subtotal e total geral corretos no rodapé.
+- [x] **T-25** — Teste de integração: adicionar item manualmente → subtotal e total geral corretos no rodapé.
 
 ## Etapa 3 — Câmera, OCR, parsing e confirmação automática
 
