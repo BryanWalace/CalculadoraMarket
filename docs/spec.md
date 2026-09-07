@@ -162,24 +162,24 @@ Além dessas, ficam registradas as seguintes suposições menores, também abert
 
 - Exportação (RF-48/RF-49) vale para compras já finalizadas, acessadas pelo histórico. O carrinho em andamento não tem exportação própria nesta fase.
 - Uma compra sem nenhum item não pode ser finalizada (RF-40) — não há utilidade em salvar uma compra vazia no histórico.
-- "Baixa confiança" do OCR (RF-25) é operacionalizada como ausência de candidato válido de preço e/ou nome, não como um número de confiança específico — ver seção 3.
+- "Baixa confiança" do OCR (RF-25) é operacionalizada como ausência de candidato válido de preço **e** nome ao mesmo tempo, não como um número de confiança específico — ver seção 3 (corrigido de "e/ou" para "nem...nem" na Fase 3, T-34, por contradizer a RF-24).
 - A comparação com o mês anterior (RF-47) mostra tanto a diferença em valor quanto, quando aplicável, a variação percentual.
 
 ## 7. Critérios de aceite
 
 Critérios de comportamento do produto, cada um rastreável aos RF-xx correspondentes:
 
-- [ ] Fotografar uma etiqueta preenche nome e preço automaticamente na tela de confirmação — RF-14, RF-15, RF-17, RF-18, RF-20, RF-21, RF-23
-- [ ] Informar a quantidade calcula o subtotal e soma ao total geral — RF-07, RF-02
-- [ ] Editar quantidade ou preço de um item atualiza subtotal e total geral — RF-10, RF-07, RF-02
-- [ ] Excluir item recalcula o total e permite desfazer — RF-31, RF-32, RF-02
-- [ ] Produto por peso aceita quantidade decimal — RF-09, RF-26, RF-29
-- [ ] Finalizar salva a compra e ela aparece no histórico com o total correto — RF-37, RF-39, RF-41
-- [ ] Fechar e reabrir o app mantém o carrinho e o histórico — RF-51, RF-52
-- [ ] Funciona 100% offline, sem nenhuma chave de API no código — regra de negócio (seção 3, "chamada de rede"), RF-53
+- [x] Fotografar uma etiqueta preenche nome e preço automaticamente na tela de confirmação — RF-14, RF-15, RF-17, RF-18, RF-20, RF-21, RF-23
+- [x] Informar a quantidade calcula o subtotal e soma ao total geral — RF-07, RF-02
+- [x] Editar quantidade ou preço de um item atualiza subtotal e total geral — RF-10, RF-07, RF-02
+- [x] Excluir item recalcula o total e permite desfazer — RF-31, RF-32, RF-02
+- [x] Produto por peso aceita quantidade decimal — RF-09, RF-26, RF-29
+- [x] Finalizar salva a compra e ela aparece no histórico com o total correto — RF-37, RF-39, RF-41
+- [x] Fechar e reabrir o app mantém o carrinho e o histórico — RF-51, RF-52
+- [x] Funciona 100% offline, sem nenhuma chave de API no código — regra de negócio (seção 3, "chamada de rede"), RF-53
 
 Critérios de qualidade de engenharia, transversais a todos os RF-xx (não são requisitos de comportamento visível ao usuário, mas condição de aceite do projeto como um todo):
 
-- [ ] `npx tsc --noEmit`, lint e suíte de testes passam sem erro nem warning
-- [ ] Toda regra de negócio implementada tem um RF-xx correspondente nesta spec
-- [ ] Nenhuma query SQL montada por concatenação de string — regra de negócio, seção 3
+- [x] `npx tsc --noEmit`, lint e suíte de testes passam sem erro nem warning
+- [x] Toda regra de negócio implementada tem um RF-xx correspondente nesta spec
+- [x] Nenhuma query SQL montada por concatenação de string — regra de negócio, seção 3
