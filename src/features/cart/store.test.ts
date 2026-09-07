@@ -338,6 +338,62 @@ describe('useCartStore.finalizeList', () => {
   });
 });
 
+describe('useCartStore.reopenFromHistory', () => {
+  it('duplica os itens da compra num carrinho novo, mantendo o original intacto (RF-43)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, null);
+    await useCartStore
+      .getState()
+      .addItem(db, { name: 'Feijão', unitPrice: 899, quantity: 1, unit: 'un' }, null);
+    const historicalListId = useCartStore.getState().activeList?.id as number;
+    await useCartStore.getState().finalizeList(db, 'Compra antiga', null);
+    const activeListIdAfterFinalize = useCartStore.getState().activeList?.id;
+
+    await useCartStore.getState().reopenFromHistory(db, historicalListId);
+
+    const state = useCartStore.getState();
+    expect(state.activeList?.id).not.toBe(activeListIdAfterFinalize);
+    expect(state.items).toHaveLength(2);
+    expect(state.items.map((item) => item.name).sort()).toEqual(['Arroz', 'Feijão']);
+    // Itens duplicados têm ids novos, não são os mesmos registros.
+    expect(state.items.every((item) => item.listId === state.activeList?.id)).toBe(true);
+
+    // A compra original no histórico continua com os itens dela, intacta.
+    const original = await db.getFirstAsync<{ finished_at: string }>(
+      'SELECT * FROM shopping_lists WHERE id = ?',
+      historicalListId,
+    );
+    expect(original?.finished_at).not.toBeNull();
+    const originalItems = await db.getAllAsync(
+      'SELECT * FROM list_items WHERE list_id = ? ORDER BY id DESC',
+      historicalListId,
+    );
+    expect(originalItems).toHaveLength(2);
+  });
+
+  it('não carrega a foto original ao duplicar (evita apagar a foto do histórico depois)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, 'file:///original.jpg');
+    const historicalListId = useCartStore.getState().activeList?.id as number;
+    await useCartStore.getState().finalizeList(db, 'Compra antiga', null);
+
+    await useCartStore.getState().reopenFromHistory(db, historicalListId);
+
+    expect(useCartStore.getState().items[0].photoUri).toBeNull();
+  });
+
+  it('lança erro se a compra do histórico não existe mais', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+
+    await expect(useCartStore.getState().reopenFromHistory(db, 999)).rejects.toThrow(
+      'não encontrada',
+    );
+  });
+});
+
 describe('seletores derivados', () => {
   it('nunca armazenam total/contagem à parte — sempre calculados dos itens', () => {
     const state: Pick<CartState, 'items'> = {

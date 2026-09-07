@@ -1,15 +1,17 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getListWithItems } from '../../src/db/listsQueries';
 import type { ListItem, ShoppingList } from '../../src/db/schema';
+import { useCartStore } from '../../src/features/cart/store';
 import { formatCurrencyBRL, formatDate, formatQuantity } from '../../src/lib/format';
 
 export default function HistoryDetailScreen() {
   const db = useSQLiteContext();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const reopenFromHistory = useCartStore((state) => state.reopenFromHistory);
   const [data, setData] = useState<{ list: ShoppingList; items: ListItem[] } | null | undefined>(
     undefined,
   );
@@ -17,6 +19,11 @@ export default function HistoryDetailScreen() {
   useEffect(() => {
     getListWithItems(db, Number(id)).then(setData);
   }, [db, id]);
+
+  async function handleReopen() {
+    await reopenFromHistory(db, Number(id));
+    router.push('/');
+  }
 
   if (data === undefined) {
     return (
@@ -62,6 +69,14 @@ export default function HistoryDetailScreen() {
         <Text accessibilityLabel="Total da compra" style={styles.total}>
           {formatCurrencyBRL(list.total)}
         </Text>
+        <Pressable
+          onPress={handleReopen}
+          accessibilityRole="button"
+          accessibilityLabel="Reabrir como carrinho novo"
+          style={styles.reopenButton}
+        >
+          <Text style={styles.reopenButtonText}>Reabrir como carrinho novo</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -101,6 +116,18 @@ const styles = StyleSheet.create({
   },
   total: {
     fontSize: 24,
+    fontWeight: 'bold',
+  },
+  reopenButton: {
+    marginTop: 12,
+    minHeight: 48,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: '#2563eb',
+  },
+  reopenButtonText: {
+    color: '#ffffff',
     fontWeight: 'bold',
   },
 });

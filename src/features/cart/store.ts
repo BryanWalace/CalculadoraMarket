@@ -11,6 +11,7 @@ import {
   createList,
   finalizeList as finalizeListQuery,
   getActiveList,
+  getListWithItems,
 } from '../../db/listsQueries';
 import type { ListItem, ShoppingList } from '../../db/schema';
 import type { AppDatabase } from '../../db/types';
@@ -57,6 +58,8 @@ export interface CartState {
   clearList: (db: AppDatabase) => Promise<void>;
   /** Bloqueia carrinho vazio (RF-40); esvazia para uma compra nova ao terminar (RF-39). */
   finalizeList: (db: AppDatabase, name: string, store: string | null) => Promise<void>;
+  /** Duplica os itens de uma compra do histórico num carrinho novo (RF-43). */
+  reopenFromHistory: (db: AppDatabase, historicalListId: number) => Promise<void>;
 }
 
 /**
@@ -186,6 +189,30 @@ export const useCartStore = create<CartState>((set, get) => ({
     await finalizeListQuery(db, activeList.id, name, store);
     const newList = await createList(db, DRAFT_LIST_NAME);
     set({ activeList: newList, items: [] });
+  },
+
+  reopenFromHistory: async (db, historicalListId) => {
+    const historical = await getListWithItems(db, historicalListId);
+    if (!historical) {
+      throw new Error('Compra não encontrada no histórico');
+    }
+
+    const newList = await createList(db, DRAFT_LIST_NAME);
+    const newItems: ListItem[] = [];
+    for (const item of historical.items) {
+      // Sem foto: o arquivo original pertence ao registro histórico, que
+      // continua intacto — duplicar a referência arriscaria apagar a foto
+      // de um item de lá se este aqui fosse excluído depois (RF-56).
+      const newItem = await addItemQuery(
+        db,
+        newList.id,
+        { name: item.name, unitPrice: item.unitPrice, quantity: item.quantity, unit: item.unit },
+        null,
+      );
+      newItems.push(newItem);
+    }
+
+    set({ activeList: newList, items: newItems });
   },
 }));
 
