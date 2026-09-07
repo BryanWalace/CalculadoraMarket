@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 import CameraScreen from './camera';
 
@@ -154,7 +155,6 @@ describe('CameraScreen', () => {
   it('mostra um aviso amigável se a captura/OCR falhar, sem derrubar o app', async () => {
     mockPermission = { granted: true, canAskAgain: true };
     mockScanLabel.mockRejectedValue(new Error('falha nativa qualquer'));
-    const { Alert } = jest.requireActual('react-native');
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 
     const { getByLabelText } = await render(<CameraScreen />);
@@ -165,5 +165,22 @@ describe('CameraScreen', () => {
 
     expect(alertSpy).toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('oferece "Preencher manualmente" no aviso de falha, sem travar o usuário (T-40)', async () => {
+    mockPermission = { granted: true, canAskAgain: true };
+    mockScanLabel.mockRejectedValue(new Error('falha nativa qualquer'));
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      buttons?.find((button) => button.text === 'Preencher manualmente')?.onPress?.();
+    });
+
+    const { getByLabelText } = await render(<CameraScreen />);
+    await fireEvent(getByLabelText('Moldura de enquadramento do preço'), 'layout', {
+      nativeEvent: { layout: { x: 40, y: 300, width: 320, height: 120 } },
+    });
+    await fireEvent.press(getByLabelText('Fotografar etiqueta'));
+
+    expect(alertSpy).toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith('/scanner/confirm');
   });
 });

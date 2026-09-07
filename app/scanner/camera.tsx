@@ -26,6 +26,10 @@ export default function CameraScreen() {
       Alert.alert(
         'Não foi possível fotografar',
         'Tente novamente ou preencha os dados manualmente.',
+        [
+          { text: 'Tentar de novo', style: 'cancel' },
+          { text: 'Preencher manualmente', onPress: () => router.push('/scanner/confirm') },
+        ],
       );
     } finally {
       setIsCapturing(false);
