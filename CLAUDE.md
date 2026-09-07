@@ -31,7 +31,8 @@ Carrinho é um app mobile Android que soma o valor de uma compra de mercado em t
 
 ## Pegadinhas conhecidas (SDK 57 / React 19, bleeding edge)
 
-- Instalar `@react-navigation/native` (peer do expo-router) ou `expo-sqlite` direto via `npm`/`expo install` falha com ERESOLVE por causa de pacotes web opcionais do próprio `expo-router` (`@expo/ui`, `@radix-ui/*`, `vaul`) exigindo uma versão de `react-dom` diferente da resolvida — irrelevante para o app mobile. Use `npx expo install <pacote> -- --legacy-peer-deps`.
+- Instalar `@react-navigation/native` (peer do expo-router), `expo-sqlite` ou `expo-asset` direto via `npm`/`expo install` falha com ERESOLVE por causa de pacotes web opcionais do próprio `expo-router` (`@expo/ui`, `@radix-ui/*`, `vaul`) exigindo uma versão de `react-dom` diferente da resolvida — irrelevante para o app mobile. Use `npx expo install <pacote> -- --legacy-peer-deps`.
+- `expo-sqlite` é módulo nativo e **não executa dentro do Jest** (`NativeDatabase is not a constructor`) — testes de `src/db` não podem abrir um banco de verdade. Escreva os módulos de `src/db` contra um tipo mínimo (`Pick<SQLiteDatabase, ...>` com só os métodos usados) e teste com um banco falso em memória, como em `src/db/migrations.test.ts`. Além disso, importar qualquer coisa de `expo-sqlite` (mesmo só o tipo `SQLiteDatabase`) exige `expo-asset` instalado — o pacote inteiro é resolvido no import, inclusive `hooks.tsx`.
 - **Todo `--legacy-peer-deps` já derrubou um pacote de teste diferente do `node_modules`** (dedupe agressivo do npm), mesmo sem tocar nele: uma vez `@react-native/jest-preset`, outra vez `test-renderer`. Depois de qualquer instalação com essa flag, rode `npm test` antes de seguir — se faltar módulo, reinstale só ele (`npx expo install @react-native/jest-preset --dev` ou `npm install --save-dev test-renderer@^1.0.0`, conforme o caso).
 
 ## Comandos
