@@ -7,7 +7,11 @@ import {
   listItemsByListId,
   updateItem as updateItemQuery,
 } from '../../db/itemsQueries';
-import { createList, getActiveList } from '../../db/listsQueries';
+import {
+  createList,
+  finalizeList as finalizeListQuery,
+  getActiveList,
+} from '../../db/listsQueries';
 import type { ListItem, ShoppingList } from '../../db/schema';
 import type { AppDatabase } from '../../db/types';
 import { sumCents } from '../../lib/money';
@@ -51,6 +55,8 @@ export interface CartState {
   scheduleRemoval: (db: AppDatabase, id: number) => void;
   undoRemoval: () => void;
   clearList: (db: AppDatabase) => Promise<void>;
+  /** Bloqueia carrinho vazio (RF-40); esvazia para uma compra nova ao terminar (RF-39). */
+  finalizeList: (db: AppDatabase, name: string, store: string | null) => Promise<void>;
 }
 
 /**
@@ -166,6 +172,20 @@ export const useCartStore = create<CartState>((set, get) => ({
 
     await deleteItemsByListId(db, activeList.id);
     set({ items: [], pendingDeletion: null });
+  },
+
+  finalizeList: async (db, name, store) => {
+    const { activeList, items } = get();
+    if (!activeList) {
+      throw new Error('O carrinho ainda não foi hidratado');
+    }
+    if (items.length === 0) {
+      throw new Error('Não é possível finalizar um carrinho sem itens');
+    }
+
+    await finalizeListQuery(db, activeList.id, name, store);
+    const newList = await createList(db, DRAFT_LIST_NAME);
+    set({ activeList: newList, items: [] });
   },
 }));
 

@@ -110,4 +110,33 @@ describe('CartScreen', () => {
     expect(alertSpy).toHaveBeenCalled();
     expect(clearList).toHaveBeenCalled();
   });
+
+  it('não mostra "Finalizar compra" quando a lista está vazia (RF-40)', async () => {
+    useCartStore.setState({ isHydrated: true, activeList: ACTIVE_LIST, items: [] });
+
+    const { queryByLabelText } = await render(<CartScreen />);
+
+    expect(queryByLabelText('Finalizar compra')).toBeNull();
+  });
+
+  it('abre o diálogo de finalizar e chama finalizeList ao confirmar (RF-37, RF-38)', async () => {
+    const finalizeList = jest.fn().mockResolvedValue(undefined);
+    useCartStore.setState({
+      isHydrated: true,
+      activeList: ACTIVE_LIST,
+      items: [makeItem({})],
+      finalizeList,
+    });
+
+    const { getByLabelText } = await render(<CartScreen />);
+    await fireEvent.press(getByLabelText('Finalizar compra'));
+    await fireEvent.changeText(getByLabelText('Loja'), 'Mercado Bom Preço');
+    await fireEvent.press(getByLabelText('Finalizar'));
+
+    expect(finalizeList).toHaveBeenCalledWith(
+      {},
+      expect.stringContaining('Mercado Bom Preço'),
+      'Mercado Bom Preço',
+    );
+  });
 });

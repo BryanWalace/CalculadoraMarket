@@ -302,6 +302,42 @@ describe('useCartStore.clearList', () => {
   });
 });
 
+describe('useCartStore.finalizeList', () => {
+  it('bloqueia finalizar um carrinho sem nenhum item (RF-40)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+
+    await expect(
+      useCartStore.getState().finalizeList(db, 'Compra de 07/09/2026', null),
+    ).rejects.toThrow('sem itens');
+  });
+
+  it('salva com o total correto e esvazia o carrinho para uma compra nova (RF-37, RF-39)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    const originalListId = useCartStore.getState().activeList?.id;
+    await useCartStore.getState().addItem(db, validInput, null); // 1999 * 2 = 3998
+    await useCartStore
+      .getState()
+      .addItem(db, { name: 'Feijão', unitPrice: 899, quantity: 1, unit: 'un' }, null);
+
+    await useCartStore.getState().finalizeList(db, 'Compra no Mercado X', 'Mercado X');
+
+    // Esvaziou e criou um carrinho novo, diferente do finalizado.
+    expect(useCartStore.getState().items).toEqual([]);
+    expect(useCartStore.getState().activeList?.id).not.toBe(originalListId);
+
+    // A compra finalizada ficou gravada com o total certo (3998 + 899).
+    const finalized = await db.getFirstAsync<{ total: number; name: string; finished_at: string }>(
+      'SELECT * FROM shopping_lists WHERE id = ?',
+      originalListId as number,
+    );
+    expect(finalized?.total).toBe(4897);
+    expect(finalized?.name).toBe('Compra no Mercado X');
+    expect(finalized?.finished_at).not.toBeNull();
+  });
+});
+
 describe('seletores derivados', () => {
   it('nunca armazenam total/contagem à parte — sempre calculados dos itens', () => {
     const state: Pick<CartState, 'items'> = {

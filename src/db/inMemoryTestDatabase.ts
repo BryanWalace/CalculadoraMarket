@@ -68,6 +68,23 @@ export function createInMemoryDatabase(): AppDatabase {
         }
         return { lastInsertRowId: 0, changes: row ? 1 : 0 };
       }
+      if (sql.includes('UPDATE shopping_lists')) {
+        const [name, store, finishedAt, subqueryListId, whereListId] = params as [
+          string,
+          string | null,
+          string,
+          number,
+          number,
+        ];
+        const list = lists.get(whereListId);
+        if (list) {
+          const total = [...items.values()]
+            .filter((item) => item.list_id === subqueryListId)
+            .reduce((sum, item) => sum + (item.subtotal as number), 0);
+          Object.assign(list, { name, store, finished_at: finishedAt, total });
+        }
+        return { lastInsertRowId: 0, changes: list ? 1 : 0 };
+      }
       if (sql.includes('DELETE FROM list_items WHERE list_id')) {
         const [listId] = params as [number];
         for (const [id, row] of items) {
@@ -85,6 +102,10 @@ export function createInMemoryDatabase(): AppDatabase {
     getFirstAsync: jest.fn(async (sql: string, ...params: unknown[]) => {
       if (sql.includes('shopping_lists') && sql.includes('finished_at IS NULL')) {
         return [...lists.values()].find((row) => row.finished_at === null) ?? null;
+      }
+      if (sql.includes('FROM shopping_lists WHERE id')) {
+        const [id] = params as [number];
+        return lists.get(id) ?? null;
       }
       if (sql.includes('FROM list_items WHERE id')) {
         const [id] = params as [number];

@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '../src/features/cart/components/EmptyState';
+import { FinalizeDialog } from '../src/features/cart/components/FinalizeDialog';
 import { ItemCard } from '../src/features/cart/components/ItemCard';
 import { Snackbar } from '../src/features/cart/components/Snackbar';
 import {
@@ -24,9 +25,11 @@ export default function CartScreen() {
   const undoRemoval = useCartStore((state) => state.undoRemoval);
   const pendingDeletion = useCartStore((state) => state.pendingDeletion);
   const clearList = useCartStore((state) => state.clearList);
+  const finalizeList = useCartStore((state) => state.finalizeList);
   const totalCents = useCartStore(selectTotalCents);
   const itemCount = useCartStore(selectItemCount);
   const unitSum = useCartStore(selectUnitSum);
+  const [isFinalizing, setIsFinalizing] = useState(false);
 
   useEffect(() => {
     hydrate(db);
@@ -37,6 +40,11 @@ export default function CartScreen() {
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Limpar', style: 'destructive', onPress: () => clearList(db) },
     ]);
+  }
+
+  async function handleFinalizeConfirm(input: { name: string; store: string | null }) {
+    await finalizeList(db, input.name, input.store);
+    setIsFinalizing(false);
   }
 
   if (!isHydrated) {
@@ -53,14 +61,24 @@ export default function CartScreen() {
         <EmptyState />
       ) : (
         <>
-          <Pressable
-            onPress={handleClearList}
-            accessibilityRole="button"
-            accessibilityLabel="Limpar lista"
-            style={styles.clearButton}
-          >
-            <Text>Limpar lista</Text>
-          </Pressable>
+          <View style={styles.actionsRow}>
+            <Pressable
+              onPress={handleClearList}
+              accessibilityRole="button"
+              accessibilityLabel="Limpar lista"
+              style={styles.clearButton}
+            >
+              <Text>Limpar lista</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setIsFinalizing(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Finalizar compra"
+              style={styles.finalizeButton}
+            >
+              <Text style={styles.finalizeButtonText}>Finalizar compra</Text>
+            </Pressable>
+          </View>
           <FlatList
             data={items}
             keyExtractor={(item) => String(item.id)}
@@ -99,6 +117,14 @@ export default function CartScreen() {
       >
         <Text style={styles.fabIcon}>📷</Text>
       </Pressable>
+
+      <Modal
+        visible={isFinalizing}
+        animationType="slide"
+        onRequestClose={() => setIsFinalizing(false)}
+      >
+        <FinalizeDialog onConfirm={handleFinalizeConfirm} onCancel={() => setIsFinalizing(false)} />
+      </Modal>
     </View>
   );
 }
@@ -107,11 +133,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   clearButton: {
-    alignSelf: 'flex-end',
     padding: 16,
     minHeight: 48,
     justifyContent: 'center',
+  },
+  finalizeButton: {
+    marginRight: 16,
+    minHeight: 48,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: '#16a34a',
+  },
+  finalizeButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
   centered: {
     flex: 1,
