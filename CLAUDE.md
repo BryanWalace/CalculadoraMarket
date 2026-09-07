@@ -31,8 +31,8 @@ Carrinho é um app mobile Android que soma o valor de uma compra de mercado em t
 
 ## Pegadinhas conhecidas (SDK 57 / React 19, bleeding edge)
 
-- Instalar `@react-navigation/native` (peer do expo-router) direto via `npm`/`expo install` falha com ERESOLVE por causa de pacotes web opcionais do próprio `expo-router` (`@expo/ui`, `@radix-ui/*`, `vaul`) exigindo uma versão de `react-dom` diferente da resolvida — irrelevante para o app mobile. Use `npx expo install <pacote> -- --legacy-peer-deps`.
-- Esse mesmo `--legacy-peer-deps` pode remover `@react-native/jest-preset` do `node_modules` mesmo sem tocar nele diretamente (dedupe agressivo do npm). Se `npm test` falhar com "jest-preset... moved to a separate package", reinstale com `npx expo install @react-native/jest-preset --dev`.
+- Instalar `@react-navigation/native` (peer do expo-router) ou `expo-sqlite` direto via `npm`/`expo install` falha com ERESOLVE por causa de pacotes web opcionais do próprio `expo-router` (`@expo/ui`, `@radix-ui/*`, `vaul`) exigindo uma versão de `react-dom` diferente da resolvida — irrelevante para o app mobile. Use `npx expo install <pacote> -- --legacy-peer-deps`.
+- **Todo `--legacy-peer-deps` já derrubou um pacote de teste diferente do `node_modules`** (dedupe agressivo do npm), mesmo sem tocar nele: uma vez `@react-native/jest-preset`, outra vez `test-renderer`. Depois de qualquer instalação com essa flag, rode `npm test` antes de seguir — se faltar módulo, reinstale só ele (`npx expo install @react-native/jest-preset --dev` ou `npm install --save-dev test-renderer@^1.0.0`, conforme o caso).
 
 ## Comandos
 
