@@ -32,11 +32,11 @@ jobs:
       - name: Gerar projeto Android nativo
         run: npx expo prebuild --platform android
 
-      - name: Compilar APK de debug
+      - name: Compilar APK de release (assinado com a chave de debug padrão)
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
 
       - name: Publicar como release "apk-latest"
         env:
@@ -44,7 +44,7 @@ jobs:
         run: |
           gh release delete apk-latest --yes --cleanup-tag || true
           gh release create apk-latest \
-            android/app/build/outputs/apk/debug/app-debug.apk \
+            android/app/build/outputs/apk/release/app-release.apk \
             --title "Carrinho — último build" \
-            --notes "APK de debug gerado automaticamente pelo GitHub Actions a partir do commit ${{ github.sha }}. Instale habilitando \"instalar apps de fontes desconhecidas\" no Android." \
+            --notes "APK gerado automaticamente pelo GitHub Actions a partir do commit ${{ github.sha }}. Instale habilitando \"instalar apps de fontes desconhecidas\" no Android." \
             --latest

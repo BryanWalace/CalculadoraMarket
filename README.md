@@ -10,7 +10,7 @@ Custo zero. 100% offline. Sem backend, sem conta, sem chamada de rede.
 [![React Native 0.86](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=white)](https://reactnative.dev/)
 [![100% offline](https://img.shields.io/badge/rede-zero%20chamadas-success)](#-privacidade)
 
-[**📲 Baixar o APK e testar agora**](https://github.com/BryanWalace/CalculadoraMarket/releases/latest/download/app-debug.apk)
+[**📲 Baixar o APK e testar agora**](https://github.com/BryanWalace/CalculadoraMarket/releases/latest/download/app-release.apk)
 
 </div>
 
@@ -19,14 +19,14 @@ Custo zero. 100% offline. Sem backend, sem conta, sem chamada de rede.
 ## 📲 Baixar e instalar no Android
 
 1. No navegador **do celular**, abra:
-   👉 **https://github.com/BryanWalace/CalculadoraMarket/releases/latest/download/app-debug.apk**
-2. Baixe o arquivo `app-debug.apk`.
+   👉 **https://github.com/BryanWalace/CalculadoraMarket/releases/latest/download/app-release.apk**
+2. Baixe o arquivo `app-release.apk`.
 3. Ao abrir, o Android vai pedir para permitir "instalar apps de fontes desconhecidas" — permita para esse arquivo.
 4. Instale e abra o app. Ele só vai pedir a permissão de câmera no momento em que você for fotografar uma etiqueta.
 
 Esse link é **fixo** — a cada mudança no código, um novo APK é compilado automaticamente (veja o badge de build acima) e substitui o anterior, sempre no mesmo endereço.
 
-> É um build de **debug**, assinado com a chave de desenvolvimento padrão do Android — serve para testar no seu aparelho, não é uma versão para publicar na Play Store.
+> Assinado com a chave de debug padrão do Android (o próprio Gradle gera essa chave) — serve para instalar e testar no seu aparelho, não é uma versão para publicar na Play Store.
 
 ## ✨ O que o app faz
 
@@ -90,7 +90,7 @@ npx eas-cli build:configure
 npx eas-cli build -p android --profile preview
 ```
 
-Antes de gerar um build para publicar de verdade, troque o identificador de pacote `com.placeholder.appid` em `app.json` (`android.package`) por um nome próprio (ex.: `com.seudominio.carrinho`).
+`app.json` ainda não tem um `android.package` fixo — sem ele, cada `expo prebuild` gera um nome tipo `com.anonymous.carrinho`. Antes de publicar de verdade, defina um identificador próprio (ex.: `com.seudominio.carrinho`) em `app.json`.
 
 ## 🔒 Privacidade
 
