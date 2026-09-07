@@ -63,7 +63,12 @@ export function FinalizeDialog({ onConfirm, onCancel }: FinalizeDialogProps) {
       />
 
       <View style={styles.actionsRow}>
-        <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancelar">
+        <Pressable
+          onPress={onCancel}
+          accessibilityRole="button"
+          accessibilityLabel="Cancelar"
+          style={styles.actionButton}
+        >
           <Text style={{ color: colors.text }}>Cancelar</Text>
         </Pressable>
         <Pressable
@@ -71,6 +76,7 @@ export function FinalizeDialog({ onConfirm, onCancel }: FinalizeDialogProps) {
           disabled={!displayedName.trim()}
           accessibilityRole="button"
           accessibilityLabel="Finalizar"
+          style={styles.actionButton}
         >
           <Text style={{ color: colors.primary }}>Finalizar</Text>
         </Pressable>
@@ -101,5 +107,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 16,
+  },
+  actionButton: {
+    minHeight: 48,
+    minWidth: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
   },
 });

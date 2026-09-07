@@ -84,7 +84,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-58** — Feedback tátil (`expo-haptics`) ao adicionar item e ao ultrapassar o orçamento. _(RF-59)_
 - [x] **T-59** — Revisão completa de tema escuro em todas as telas (além da base do T-06). _(RF-60)_
 - [x] **T-60** — Tela de "Privacidade" explicando que nenhum dado sai do aparelho. _(RF-53)_
-- [ ] **T-61** — Auditoria de acessibilidade: `accessibilityLabel`/`accessibilityRole` e alvo de toque mínimo 48dp em todo controle interativo. _(RF-57)_
+- [x] **T-61** — Auditoria de acessibilidade: `accessibilityLabel`/`accessibilityRole` e alvo de toque mínimo 48dp em todo controle interativo. _(RF-57)_
 - [ ] **T-62** — Verificar que o layout respeita o tamanho de fonte do sistema sem quebrar. _(RF-58)_
 - [ ] **T-63** — Auditoria final de estados vazio/carregamento/erro em todas as telas relevantes. _(RF-61)_
 - [ ] **T-64** — Rodar `npm audit`, revisar dependências, confirmar zero chamada de rede no código.

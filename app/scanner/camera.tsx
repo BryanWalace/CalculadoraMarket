@@ -99,6 +99,7 @@ export default function CameraScreen() {
         onPress={() => router.push('/scanner/confirm')}
         accessibilityRole="button"
         accessibilityLabel="Adicionar manualmente"
+        style={styles.textButton}
       >
         <Text style={{ color: colors.primary }}>Prefiro digitar manualmente</Text>
       </Pressable>
@@ -132,6 +133,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontWeight: 'bold',
+  },
+  textButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
   },
   shutter: {
     position: 'absolute',
