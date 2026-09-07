@@ -22,7 +22,12 @@ describe('ItemCard', () => {
   it('mostra botões rápidos −/+ para itens un (RF-28)', async () => {
     const onAdjustQuantity = jest.fn();
     const { getByLabelText } = await render(
-      <ItemCard item={makeItem({})} onPress={jest.fn()} onAdjustQuantity={onAdjustQuantity} />,
+      <ItemCard
+        item={makeItem({})}
+        onPress={jest.fn()}
+        onDelete={jest.fn()}
+        onAdjustQuantity={onAdjustQuantity}
+      />,
     );
 
     await fireEvent.press(getByLabelText('Aumentar quantidade de Arroz'));
@@ -37,6 +42,7 @@ describe('ItemCard', () => {
       <ItemCard
         item={makeItem({ unit: 'kg', quantity: 0.75 })}
         onPress={jest.fn()}
+        onDelete={jest.fn()}
         onAdjustQuantity={jest.fn()}
       />,
     );
@@ -48,11 +54,22 @@ describe('ItemCard', () => {
   it('toque no conteúdo do card chama onPress (abre edição)', async () => {
     const onPress = jest.fn();
     const { getByLabelText } = await render(
-      <ItemCard item={makeItem({})} onPress={onPress} onAdjustQuantity={jest.fn()} />,
+      <ItemCard item={makeItem({})} onPress={onPress} onDelete={jest.fn()} />,
     );
 
     await fireEvent.press(getByLabelText('Item Arroz, toque para editar'));
 
     expect(onPress).toHaveBeenCalled();
+  });
+
+  it('botão de lixeira chama onDelete (RF-31)', async () => {
+    const onDelete = jest.fn();
+    const { getByLabelText } = await render(
+      <ItemCard item={makeItem({})} onPress={jest.fn()} onDelete={onDelete} />,
+    );
+
+    await fireEvent.press(getByLabelText('Excluir Arroz'));
+
+    expect(onDelete).toHaveBeenCalled();
   });
 });

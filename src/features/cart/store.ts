@@ -11,6 +11,7 @@ import { createList, getActiveList } from '../../db/listsQueries';
 import type { ListItem, ShoppingList } from '../../db/schema';
 import type { AppDatabase } from '../../db/types';
 import { sumCents } from '../../lib/money';
+import { deletePhotoIfExists } from '../../lib/photoStorage';
 import { listItemInputSchema, type ListItemInput } from '../../lib/validation';
 
 /**
@@ -19,16 +20,36 @@ import { listItemInputSchema, type ListItemInput } from '../../lib/validation';
  */
 const DRAFT_LIST_NAME = 'Carrinho';
 
+/** Janela de desfazer da exclusão (RF-31/32). */
+const UNDO_WINDOW_MS = 5000;
+
+interface PendingDeletion {
+  item: ListItem;
+  timeoutId: ReturnType<typeof setTimeout>;
+}
+
+async function commitDeletion(db: AppDatabase, item: ListItem): Promise<void> {
+  await deleteItemQuery(db, item.id);
+  deletePhotoIfExists(item.photoUri);
+}
+
 export interface CartState {
   activeList: ShoppingList | null;
   items: ListItem[];
   isHydrated: boolean;
+  pendingDeletion: PendingDeletion | null;
   hydrate: (db: AppDatabase) => Promise<void>;
   addItem: (db: AppDatabase, input: ListItemInput, photoUri: string | null) => Promise<void>;
   updateItem: (db: AppDatabase, id: number, input: ListItemInput) => Promise<void>;
   /** Só para itens `un` (RF-28/29); remove o item se a quantidade chegar a zero (RF-30). */
   adjustQuantity: (db: AppDatabase, id: number, delta: number) => Promise<void>;
   removeItem: (db: AppDatabase, id: number) => Promise<void>;
+  /**
+   * Some da lista na hora e agenda a exclusão real (banco + foto) para
+   * daqui a 5s; `undoRemoval` cancela. Ver docs/plan.md ADR-05.
+   */
+  scheduleRemoval: (db: AppDatabase, id: number) => void;
+  undoRemoval: () => void;
   clearList: (db: AppDatabase) => Promise<void>;
 }
 
@@ -42,6 +63,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   activeList: null,
   items: [],
   isHydrated: false,
+  pendingDeletion: null,
 
   hydrate: async (db) => {
     const existingList = await getActiveList(db);
@@ -89,6 +111,43 @@ export const useCartStore = create<CartState>((set, get) => ({
   removeItem: async (db, id) => {
     await deleteItemQuery(db, id);
     set((state) => ({ items: state.items.filter((item) => item.id !== id) }));
+  },
+
+  scheduleRemoval: (db, id) => {
+    const item = get().items.find((current) => current.id === id);
+    if (!item) {
+      return;
+    }
+
+    const existingPending = get().pendingDeletion;
+    if (existingPending) {
+      clearTimeout(existingPending.timeoutId);
+      void commitDeletion(db, existingPending.item);
+    }
+
+    set((state) => ({ items: state.items.filter((current) => current.id !== id) }));
+
+    const timeoutId = setTimeout(() => {
+      void commitDeletion(db, item).then(() => {
+        set((state) =>
+          state.pendingDeletion?.item.id === item.id ? { pendingDeletion: null } : state,
+        );
+      });
+    }, UNDO_WINDOW_MS);
+
+    set({ pendingDeletion: { item, timeoutId } });
+  },
+
+  undoRemoval: () => {
+    const { pendingDeletion } = get();
+    if (!pendingDeletion) {
+      return;
+    }
+    clearTimeout(pendingDeletion.timeoutId);
+    set((state) => ({
+      items: [pendingDeletion.item, ...state.items],
+      pendingDeletion: null,
+    }));
   },
 
   clearList: async (db) => {

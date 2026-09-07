@@ -6,11 +6,12 @@ import { formatCurrencyBRL, formatQuantity } from '../../../lib/format';
 interface ItemCardProps {
   item: ListItem;
   onPress: () => void;
+  onDelete: () => void;
   /** Omitido para itens `kg` — sem botão rápido no card (RF-28/29). */
   onAdjustQuantity?: (delta: number) => void;
 }
 
-export function ItemCard({ item, onPress, onAdjustQuantity }: ItemCardProps) {
+export function ItemCard({ item, onPress, onDelete, onAdjustQuantity }: ItemCardProps) {
   return (
     <View style={styles.card}>
       <Pressable
@@ -49,6 +50,15 @@ export function ItemCard({ item, onPress, onAdjustQuantity }: ItemCardProps) {
           </Pressable>
         </View>
       ) : null}
+
+      <Pressable
+        onPress={onDelete}
+        accessibilityRole="button"
+        accessibilityLabel={`Excluir ${item.name}`}
+        style={styles.deleteButton}
+      >
+        <Text>🗑</Text>
+      </Pressable>
     </View>
   );
 }
@@ -82,5 +92,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderRadius: 8,
+  },
+  deleteButton: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
 });

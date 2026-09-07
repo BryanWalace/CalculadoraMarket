@@ -5,6 +5,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '../src/features/cart/components/EmptyState';
 import { ItemCard } from '../src/features/cart/components/ItemCard';
+import { Snackbar } from '../src/features/cart/components/Snackbar';
 import {
   selectItemCount,
   selectTotalCents,
@@ -19,6 +20,9 @@ export default function CartScreen() {
   const items = useCartStore((state) => state.items);
   const hydrate = useCartStore((state) => state.hydrate);
   const adjustQuantity = useCartStore((state) => state.adjustQuantity);
+  const scheduleRemoval = useCartStore((state) => state.scheduleRemoval);
+  const undoRemoval = useCartStore((state) => state.undoRemoval);
+  const pendingDeletion = useCartStore((state) => state.pendingDeletion);
   const totalCents = useCartStore(selectTotalCents);
   const itemCount = useCartStore(selectItemCount);
   const unitSum = useCartStore(selectUnitSum);
@@ -48,10 +52,19 @@ export default function CartScreen() {
               item={item}
               onPress={() => router.push(`/scanner/confirm?itemId=${item.id}`)}
               onAdjustQuantity={(delta) => adjustQuantity(db, item.id, delta)}
+              onDelete={() => scheduleRemoval(db, item.id)}
             />
           )}
         />
       )}
+
+      {pendingDeletion ? (
+        <Snackbar
+          message={`"${pendingDeletion.item.name}" excluído`}
+          actionLabel="Desfazer"
+          onActionPress={undoRemoval}
+        />
+      ) : null}
 
       <View style={styles.footer}>
         <Text accessibilityLabel="Total geral" style={styles.total}>

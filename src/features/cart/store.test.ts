@@ -235,6 +235,70 @@ describe('useCartStore.adjustQuantity', () => {
   });
 });
 
+describe('useCartStore.scheduleRemoval / undoRemoval (ADR-05)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('some da lista na hora, mas só apaga do banco depois de 5s', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, null);
+    const itemId = useCartStore.getState().items[0].id;
+
+    useCartStore.getState().scheduleRemoval(db, itemId);
+
+    expect(useCartStore.getState().items).toEqual([]);
+    expect(useCartStore.getState().pendingDeletion?.item.id).toBe(itemId);
+    // Ainda não passaram os 5s: o item continua no banco.
+    expect(await db.getFirstAsync('SELECT * FROM list_items WHERE id = ?', itemId)).not.toBeNull();
+
+    await jest.advanceTimersByTimeAsync(5000);
+
+    expect(useCartStore.getState().pendingDeletion).toBeNull();
+    expect(await db.getFirstAsync('SELECT * FROM list_items WHERE id = ?', itemId)).toBeNull();
+  });
+
+  it('desfazer restaura o item e cancela a exclusão agendada', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, null);
+    const itemId = useCartStore.getState().items[0].id;
+
+    useCartStore.getState().scheduleRemoval(db, itemId);
+    useCartStore.getState().undoRemoval();
+
+    expect(useCartStore.getState().items).toHaveLength(1);
+    expect(useCartStore.getState().pendingDeletion).toBeNull();
+
+    await jest.advanceTimersByTimeAsync(5000);
+
+    // O item nunca foi apagado do banco, mesmo depois do prazo.
+    expect(await db.getFirstAsync('SELECT * FROM list_items WHERE id = ?', itemId)).not.toBeNull();
+  });
+
+  it('excluir um segundo item enquanto o primeiro ainda está pendente finaliza o primeiro na hora', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, null);
+    await useCartStore
+      .getState()
+      .addItem(db, { name: 'Feijão', unitPrice: 899, quantity: 1, unit: 'un' }, null);
+    const [second, first] = useCartStore.getState().items;
+
+    useCartStore.getState().scheduleRemoval(db, first.id);
+    useCartStore.getState().scheduleRemoval(db, second.id);
+    await Promise.resolve(); // deixa a exclusão imediata do primeiro (fire-and-forget) resolver
+
+    expect(useCartStore.getState().pendingDeletion?.item.id).toBe(second.id);
+    expect(await db.getFirstAsync('SELECT * FROM list_items WHERE id = ?', first.id)).toBeNull();
+  });
+});
+
 describe('useCartStore.removeItem', () => {
   it('remove o item do estado', async () => {
     const db = createInMemoryDatabase();
