@@ -4,7 +4,6 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@react-native-ml-kit/text-recognition": "^2.0.0",
-    "@react-navigation/native": "^7.3.18",
     "expo": "~57.0.20",
     "expo-asset": "~57.0.16",
     "expo-camera": "~57.0.4",
