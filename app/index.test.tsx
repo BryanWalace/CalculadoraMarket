@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react-native';
 
-import App from './App';
+import CartScreen from './index';
 
-describe('App', () => {
+describe('CartScreen', () => {
   it('renderiza sem falhar', async () => {
-    const { getByText } = await render(<App />);
+    const { getByText } = await render(<CartScreen />);
 
     expect(getByText('Carrinho')).toBeTruthy();
   });

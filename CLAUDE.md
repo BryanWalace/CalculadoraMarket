@@ -29,6 +29,11 @@ Carrinho é um app mobile Android que soma o valor de uma compra de mercado em t
 - Estilização: `StyleSheet` nativo ou NativeWind — sem bibliotecas de UI pesadas
 - Testes: Jest (preset `jest-expo`) + React Native Testing Library v14 — decisão registrada em `docs/plan.md` ADR-06. **Atenção:** nessa versão, `render()` é assíncrono (usa a API `createRoot` do `test-renderer`, compatível com React 19) — sempre `await render(...)`, nunca desestruturar o retorno direto.
 
+## Pegadinhas conhecidas (SDK 57 / React 19, bleeding edge)
+
+- Instalar `@react-navigation/native` (peer do expo-router) direto via `npm`/`expo install` falha com ERESOLVE por causa de pacotes web opcionais do próprio `expo-router` (`@expo/ui`, `@radix-ui/*`, `vaul`) exigindo uma versão de `react-dom` diferente da resolvida — irrelevante para o app mobile. Use `npx expo install <pacote> -- --legacy-peer-deps`.
+- Esse mesmo `--legacy-peer-deps` pode remover `@react-native/jest-preset` do `node_modules` mesmo sem tocar nele diretamente (dedupe agressivo do npm). Se `npm test` falhar com "jest-preset... moved to a separate package", reinstale com `npx expo install @react-native/jest-preset --dev`.
+
 ## Comandos
 
 | Comando                                  | Descrição                                                                              |

@@ -17,7 +17,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-03** — Configurar Jest (`jest-expo`) + React Native Testing Library; um teste smoke trivial validando o setup. _(plan.md ADR-06)_
 - [x] **T-04** — Configurar Husky + lint-staged rodando lint e testes no pre-commit.
 - [x] **T-05** — Criar `.gitignore` (`.env*`, `/android`, `/ios`, `node_modules`) e commit inicial do scaffolding.
-- [ ] **T-06** — Instalar/configurar `expo-router` + `expo-dev-client`; `_layout.tsx` com base de tema claro/escuro. _(RF-60)_
+- [x] **T-06** — Instalar/configurar `expo-router` + `expo-dev-client`; `_layout.tsx` com base de tema claro/escuro. _(RF-60)_
 - [ ] **T-07** — Criar rotas placeholder navegáveis entre si sem funcionalidade: `app/index.tsx`, `app/scanner/camera.tsx`, `app/scanner/confirm.tsx`, `app/history/index.tsx`, `app/history/[id].tsx`, `app/privacy.tsx`.
 - [ ] **T-08** — Criar schema SQLite inicial (`src/db/schema.ts`) com `shopping_lists` e `list_items`. _(plan.md §3)_
 - [ ] **T-09** — Criar `src/db/migrations.ts` com versionamento via `PRAGMA user_version` e a migração inicial. _(plan.md ADR-04)_
