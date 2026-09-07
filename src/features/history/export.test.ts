@@ -1,5 +1,5 @@
 import type { ListItem, ShoppingList } from '../../db/schema';
-import { generatePurchaseCsv } from './export';
+import { generatePurchaseCsv, generatePurchaseText } from './export';
 
 const LIST: ShoppingList = {
   id: 1,
@@ -58,5 +58,39 @@ describe('generatePurchaseCsv', () => {
 
     expect(lines).toHaveLength(2);
     expect(lines[1]).toBe('Total;;;;R$ 48,97');
+  });
+});
+
+describe('generatePurchaseText', () => {
+  it('gera nome, data, um item por linha e o total, prontos para colar em qualquer lugar', () => {
+    const text = generatePurchaseText(LIST, [
+      makeItem({ name: 'Arroz', quantity: 2, unit: 'un', unitPrice: 1999, subtotal: 3998 }),
+      makeItem({ name: 'Picanha', quantity: 0.75, unit: 'kg', unitPrice: 4999, subtotal: 3749 }),
+    ]);
+
+    expect(text).toBe(
+      [
+        'Compra no Mercado X',
+        '01/09/2026',
+        '',
+        'Arroz — 2 un × R$ 19,99 = R$ 39,98',
+        'Picanha — 0,750 kg × R$ 49,99 = R$ 37,49',
+        '',
+        'Total: R$ 48,97',
+      ].join('\n'),
+    );
+  });
+
+  it('omite a linha de data quando a compra não tem finishedAt', () => {
+    const text = generatePurchaseText({ ...LIST, finishedAt: null }, [makeItem({})]);
+
+    expect(text.split('\n')[0]).toBe('Compra no Mercado X');
+    expect(text.split('\n')[1]).toBe('');
+  });
+
+  it('gera texto válido mesmo para uma compra sem itens', () => {
+    const text = generatePurchaseText(LIST, []);
+
+    expect(text).toContain('Total: R$ 48,97');
   });
 });

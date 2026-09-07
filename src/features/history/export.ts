@@ -1,5 +1,5 @@
 import type { ListItem, ShoppingList } from '../../db/schema';
-import { formatCurrencyBRL, formatQuantity } from '../../lib/format';
+import { formatCurrencyBRL, formatDate, formatQuantity } from '../../lib/format';
 
 /**
  * Ponto e vírgula como separador (não vírgula): no Excel em pt-BR a vírgula
@@ -30,4 +30,21 @@ export function generatePurchaseCsv(list: ShoppingList, items: ListItem[]): stri
   return [header, ...itemRows, totalRow]
     .map((row) => row.map(escapeCsvField).join(CSV_DELIMITER))
     .join('\n');
+}
+
+/** RF-49: exporta uma compra do histórico em texto simples (WhatsApp, e-mail etc.). */
+export function generatePurchaseText(list: ShoppingList, items: ListItem[]): string {
+  const lines = [
+    list.name,
+    ...(list.finishedAt ? [formatDate(list.finishedAt)] : []),
+    '',
+    ...items.map(
+      (item) =>
+        `${item.name} — ${formatQuantity(item.quantity, item.unit)} ${item.unit} × ${formatCurrencyBRL(item.unitPrice)} = ${formatCurrencyBRL(item.subtotal)}`,
+    ),
+    '',
+    `Total: ${formatCurrencyBRL(list.total)}`,
+  ];
+
+  return lines.join('\n');
 }
