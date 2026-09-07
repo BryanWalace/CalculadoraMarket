@@ -62,7 +62,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 
 ## Etapa 4 — Histórico, resumo de gastos e exportação
 
-- [ ] **T-42** — Diálogo de finalizar compra: campo opcional "Loja" e nome sugerido (loja + data), editável. _(RF-38)_
+- [x] **T-42** — Diálogo de finalizar compra: campo opcional "Loja" e nome sugerido (loja + data), editável. _(RF-38)_
 - [ ] **T-43** — Bloquear finalização de carrinho sem nenhum item. _(RF-40)_
 - [ ] **T-44** — Ao confirmar finalização: salvar com data/hora e total, esvaziar o carrinho para uma compra nova. _(RF-37, RF-39)_
 - [ ] **T-45** — `HistoryScreen`: lista de compras salvas, mais recente primeiro, com nome/data/total. _(RF-41)_
