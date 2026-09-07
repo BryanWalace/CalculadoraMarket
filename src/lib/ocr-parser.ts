@@ -153,9 +153,14 @@ function selectProductName(blocks: OcrBlock[]): string | null {
   return toTitleCase(longest);
 }
 
-/** RF-22: qualquer menção a "kg" na etiqueta marca a unidade como peso. */
+/**
+ * RF-22: kg só quando há indicação de peso variável — preço com sufixo
+ * "/kg" (ex.: "R$ 39,90/kg") ou uma quantidade decimal antes de "kg" (ex.:
+ * "0,850 KG", típico de balança). Um "kg" colado a um número inteiro (ex.:
+ * "Arroz 5kg") é só o tamanho da embalagem, vendida inteira — fica "un".
+ */
 function detectUnit(blocks: OcrBlock[]): Unit {
-  const hasKg = blocks.some((block) => /kg/i.test(block.text));
+  const hasKg = blocks.some((block) => /\d,\d+\s?kg|\/\s?kg/i.test(block.text));
   return hasKg ? 'kg' : 'un';
 }
 

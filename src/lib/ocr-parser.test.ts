@@ -172,6 +172,21 @@ describe('parseLabel — detecção de unidade kg (RF-22)', () => {
   it('assume "un" para lista de blocos vazia', () => {
     expect(parseLabel([]).unit).toBe('un');
   });
+
+  it('NÃO marca como kg um "kg" colado a tamanho de embalagem (ex.: "Arroz 5kg")', () => {
+    // Achado ao testar com amostras reais (T-35): "Arroz Tipo 1 5kg" é uma
+    // sacola de 5kg vendida inteira (un), não um item precificado por peso.
+    const result = parseLabel([
+      { text: 'Arroz Tipo 1 5kg', boundingBoxHeight: 24 },
+      { text: 'R$ 22,90', boundingBoxHeight: 48 },
+    ]);
+    expect(result.unit).toBe('un');
+  });
+
+  it('marca como kg quando o peso vem com casas decimais (ticket de balança)', () => {
+    const result = parseLabel([{ text: '0,850 KG', boundingBoxHeight: 40 }]);
+    expect(result.unit).toBe('kg');
+  });
 });
 
 describe('parseLabel — confiança do reconhecimento (RF-25)', () => {
