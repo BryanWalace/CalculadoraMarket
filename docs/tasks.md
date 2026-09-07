@@ -66,7 +66,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-43** — Bloquear finalização de carrinho sem nenhum item. _(RF-40)_ (mesmo commit da T-44 — o guard só é testável junto da ação de finalizar)
 - [x] **T-44** — Ao confirmar finalização: salvar com data/hora e total, esvaziar o carrinho para uma compra nova. _(RF-37, RF-39)_
 - [x] **T-45** — `HistoryScreen`: lista de compras salvas, mais recente primeiro, com nome/data/total. _(RF-41)_
-- [ ] **T-46** — `HistoryDetailScreen`: detalhe somente leitura com todos os itens da compra. _(RF-42)_
+- [x] **T-46** — `HistoryDetailScreen`: detalhe somente leitura com todos os itens da compra. _(RF-42)_
 - [ ] **T-47** — Reabrir compra do histórico como carrinho novo (duplica itens; compra original permanece intacta). _(RF-43)_
 - [ ] **T-48** — Ao reabrir com um carrinho já ativo: avisar e pedir confirmação para finalizar ou descartar o carrinho atual antes de prosseguir. _(RF-44)_
 - [ ] **T-49** — **TDD** `src/lib/money.ts`: testes de `calculateMonthSummary` (total do mês, média por compra, comparação com mês anterior) antes da implementação. _(RF-45, RF-46, RF-47)_
