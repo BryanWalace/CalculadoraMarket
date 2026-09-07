@@ -150,6 +150,48 @@ describe('useCartStore.hydrate', () => {
   });
 });
 
+describe('persistência entre reaberturas do app (RF-51, RF-52)', () => {
+  it('o carrinho volta exatamente como estava depois de "fechar e reabrir" o app', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, null);
+    await useCartStore
+      .getState()
+      .addItem(db, { name: 'Feijão', unitPrice: 899, quantity: 1, unit: 'un' }, null);
+    const itemId = useCartStore.getState().items[1].id; // Arroz, o mais antigo
+    await useCartStore
+      .getState()
+      .updateItem(db, itemId, { name: 'Arroz', unitPrice: 1999, quantity: 5, unit: 'un' });
+
+    // Simula o app fechando: nada além do banco (db) sobrevive.
+    useCartStore.setState({ activeList: null, items: [], isHydrated: false });
+
+    await useCartStore.getState().hydrate(db);
+
+    const state = useCartStore.getState();
+    expect(state.items).toHaveLength(2);
+    expect(state.items.find((item) => item.name === 'Arroz')?.quantity).toBe(5);
+    expect(state.items.find((item) => item.name === 'Feijão')).toBeTruthy();
+  });
+
+  it('itens excluídos e confirmados (fora da janela de desfazer) não voltam ao reabrir', async () => {
+    jest.useFakeTimers();
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().addItem(db, validInput, null);
+    const itemId = useCartStore.getState().items[0].id;
+
+    useCartStore.getState().scheduleRemoval(db, itemId);
+    await jest.advanceTimersByTimeAsync(5000);
+    jest.useRealTimers();
+
+    useCartStore.setState({ activeList: null, items: [], isHydrated: false });
+    await useCartStore.getState().hydrate(db);
+
+    expect(useCartStore.getState().items).toEqual([]);
+  });
+});
+
 describe('useCartStore.addItem', () => {
   it('lança erro se o carrinho ainda não foi hidratado', async () => {
     const db = createInMemoryDatabase();
