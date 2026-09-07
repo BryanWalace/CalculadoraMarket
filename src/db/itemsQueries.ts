@@ -91,6 +91,10 @@ export async function deleteItem(db: AppDatabase, id: number): Promise<void> {
   await db.runAsync('DELETE FROM list_items WHERE id = ?', id);
 }
 
+export async function deleteItemsByListId(db: AppDatabase, listId: number): Promise<void> {
+  await db.runAsync('DELETE FROM list_items WHERE list_id = ?', listId);
+}
+
 export async function listItemsByListId(db: AppDatabase, listId: number): Promise<ListItem[]> {
   const rows = await db.getAllAsync<ListItemRow>(
     'SELECT * FROM list_items WHERE list_id = ? ORDER BY id DESC',

@@ -1,5 +1,11 @@
 import type { ListItemInput } from '../lib/validation';
-import { addItem, deleteItem, listItemsByListId, updateItem } from './itemsQueries';
+import {
+  addItem,
+  deleteItem,
+  deleteItemsByListId,
+  listItemsByListId,
+  updateItem,
+} from './itemsQueries';
 import type { AppDatabase } from './types';
 
 const LIST_ITEM_ROW = {
@@ -98,6 +104,19 @@ describe('deleteItem', () => {
     await deleteItem(db, 10);
 
     expect(db.runAsync).toHaveBeenCalledWith(expect.stringContaining('DELETE FROM list_items'), 10);
+  });
+});
+
+describe('deleteItemsByListId', () => {
+  it('remove todos os itens de uma lista com query parametrizada', async () => {
+    const db = createFakeDatabase();
+
+    await deleteItemsByListId(db, 1);
+
+    expect(db.runAsync).toHaveBeenCalledWith(
+      expect.stringContaining('DELETE FROM list_items WHERE list_id = ?'),
+      1,
+    );
   });
 });
 
