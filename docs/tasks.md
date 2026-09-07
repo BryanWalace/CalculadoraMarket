@@ -47,7 +47,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-27** — Tratar permissão negada: oferecer entrada manual sem travar o app. _(RF-13)_
 - [x] **T-28** — `CameraScreen`: preview da câmera com moldura/guia de enquadramento do preço. _(RF-14)_
 - [x] **T-29** — Capturar foto, recortar para a área da moldura (`expo-image-manipulator`) e salvar no diretório privado do app (nunca na galeria pública). _(RF-15, RF-55)_ ⚠️ não testável em dispositivo real neste ambiente
-- [ ] **T-30** — Redimensionar/comprimir a foto (largura máx. ~1080px) antes do OCR. _(RF-16)_
+- [x] **T-30** — Redimensionar/comprimir a foto (largura máx. ~1080px) antes do OCR. _(RF-16)_
 - [ ] **T-31** — **TDD** `src/lib/ocr-parser.ts`: testes de seleção de preço por maior altura de bounding box, contra os formatos `R$ 12,34`, `12,34`, `1.234,56`, `12.34` e valor quebrado em linhas. _(RF-17, RF-18)_
 - [ ] **T-32** — **TDD** `src/lib/ocr-parser.ts`: testes ignorando código de barras, CNPJ, data e gramatura/volume como candidatos a preço. _(RF-19)_
 - [ ] **T-33** — **TDD** `src/lib/ocr-parser.ts`: testes de extração de nome (linha alfabética mais longa, exclusão de palavras de ruído) e Title Case. _(RF-20, RF-21)_

@@ -7,6 +7,7 @@ import { captureAndCropPhoto } from './capturePhoto';
 const mockTakePictureAsync = jest.fn();
 const mockRenderAsync = jest.fn();
 const mockCrop = jest.fn();
+const mockResize = jest.fn();
 const mockMove = jest.fn();
 
 jest.mock('expo-image-manipulator', () => ({
@@ -21,8 +22,12 @@ jest.mock('expo-file-system', () => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockCrop.mockReturnValue({ renderAsync: mockRenderAsync });
-  (ImageManipulator.manipulate as jest.Mock).mockReturnValue({ crop: mockCrop });
+  // crop() e resize() sempre devolvem o mesmo contexto encadeável, com
+  // renderAsync no fim da cadeia, tenha ou não passado por resize().
+  const context = { crop: mockCrop, resize: mockResize, renderAsync: mockRenderAsync };
+  mockCrop.mockReturnValue(context);
+  mockResize.mockReturnValue(context);
+  (ImageManipulator.manipulate as jest.Mock).mockReturnValue(context);
   mockRenderAsync.mockResolvedValue({
     saveAsync: jest.fn().mockResolvedValue({ uri: 'file:///cache/temp.jpg' }),
   });
@@ -58,6 +63,40 @@ describe('captureAndCropPhoto', () => {
     });
     expect(mockMove).toHaveBeenCalled();
     expect(finalUri).toMatch(/^file:\/\/\/document\/etiqueta-\d+\.jpg$/);
+  });
+
+  it('não redimensiona quando o recorte já é menor que 1080px de largura (RF-16)', async () => {
+    const cameraRef = makeCameraRef({ uri: 'file:///tmp/original.jpg', width: 800, height: 1600 });
+
+    await captureAndCropPhoto(
+      cameraRef,
+      { x: 40, y: 300, width: 320, height: 120 },
+      {
+        width: 400,
+        height: 800,
+      },
+    ); // recorte final: 640px de largura
+
+    expect(mockResize).not.toHaveBeenCalled();
+  });
+
+  it('redimensiona para 1080px de largura quando o recorte fica maior que isso (RF-16)', async () => {
+    const cameraRef = makeCameraRef({
+      uri: 'file:///tmp/original.jpg',
+      width: 4000,
+      height: 3000,
+    });
+
+    await captureAndCropPhoto(
+      cameraRef,
+      { x: 0, y: 0, width: 400, height: 100 },
+      {
+        width: 400,
+        height: 800,
+      },
+    ); // recorte final: 4000px de largura
+
+    expect(mockResize).toHaveBeenCalledWith({ width: 1080 });
   });
 
   it('lança erro claro se a câmera não retornar uma foto', async () => {
