@@ -6,6 +6,8 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { listFinishedLists } from '../../src/db/listsQueries';
 import type { ShoppingList } from '../../src/db/schema';
 import { HistoryListItem } from '../../src/features/history/components/HistoryListItem';
+import { SummaryCard } from '../../src/features/history/components/SummaryCard';
+import { calculateMonthSummary } from '../../src/lib/money';
 
 export default function HistoryScreen() {
   const db = useSQLiteContext();
@@ -32,10 +34,13 @@ export default function HistoryScreen() {
     );
   }
 
+  const summary = calculateMonthSummary(lists, new Date());
+
   return (
     <FlatList
       data={lists}
       keyExtractor={(list) => String(list.id)}
+      ListHeaderComponent={<SummaryCard summary={summary} />}
       renderItem={({ item }) => (
         <HistoryListItem list={item} onPress={() => router.push(`/history/${item.id}`)} />
       )}

@@ -70,7 +70,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-47** — Reabrir compra do histórico como carrinho novo (duplica itens; compra original permanece intacta). _(RF-43)_
 - [x] **T-48** — Ao reabrir com um carrinho já ativo: avisar e pedir confirmação para finalizar ou descartar o carrinho atual antes de prosseguir. _(RF-44)_
 - [x] **T-49** — **TDD** `src/lib/money.ts`: testes de `calculateMonthSummary` (total do mês, média por compra, comparação com mês anterior) antes da implementação. _(RF-45, RF-46, RF-47)_
-- [ ] **T-50** — `SummaryCard` no topo do histórico exibindo o resumo do mês. _(RF-45, RF-46, RF-47)_
+- [x] **T-50** — `SummaryCard` no topo do histórico exibindo o resumo do mês. _(RF-45, RF-46, RF-47)_
 - [ ] **T-51** — `src/features/history/export.ts`: gerar CSV de uma compra do histórico. _(RF-48)_
 - [ ] **T-52** — `src/features/history/export.ts`: gerar texto simples de uma compra do histórico. _(RF-49)_
 - [ ] **T-53** — Compartilhar o arquivo exportado via `expo-sharing`. _(RF-50)_
