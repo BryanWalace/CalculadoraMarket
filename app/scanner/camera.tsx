@@ -1,6 +1,8 @@
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
-import { useCameraPermissions } from 'expo-camera';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { CaptureGuideOverlay } from '../../src/features/scanner/components/CaptureGuideOverlay';
 
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -8,7 +10,8 @@ export default function CameraScreen() {
   if (permission?.granted) {
     return (
       <View style={styles.container}>
-        <Text>Câmera</Text>
+        <CameraView style={StyleSheet.absoluteFill} facing="back" />
+        <CaptureGuideOverlay />
       </View>
     );
   }

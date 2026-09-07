@@ -8,6 +8,7 @@ let mockPermission: { granted: boolean; canAskAgain: boolean } | null = null;
 
 jest.mock('expo-camera', () => ({
   useCameraPermissions: () => [mockPermission, mockRequestPermission],
+  CameraView: jest.requireActual('react-native').View,
 }));
 
 jest.mock('expo-router', () => ({
@@ -47,12 +48,13 @@ describe('CameraScreen', () => {
     expect(mockRequestPermission).toHaveBeenCalled();
   });
 
-  it('mostra a câmera quando a permissão já foi concedida', async () => {
+  it('mostra a câmera com a moldura de enquadramento quando a permissão já foi concedida (RF-14)', async () => {
     mockPermission = { granted: true, canAskAgain: true };
 
-    const { getByText, queryByText } = await render(<CameraScreen />);
+    const { getByText, getByLabelText, queryByText } = await render(<CameraScreen />);
 
-    expect(getByText('Câmera')).toBeTruthy();
+    expect(getByText('Posicione o preço dentro da moldura')).toBeTruthy();
+    expect(getByLabelText('Moldura de enquadramento do preço')).toBeTruthy();
     expect(queryByText('Precisamos da câmera')).toBeNull();
   });
 
