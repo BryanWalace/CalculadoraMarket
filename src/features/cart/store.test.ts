@@ -338,6 +338,47 @@ describe('useCartStore.finalizeList', () => {
   });
 });
 
+describe('useCartStore.setBudget', () => {
+  it('lança erro se o carrinho ainda não foi hidratado', async () => {
+    const db = createInMemoryDatabase();
+
+    await expect(useCartStore.getState().setBudget(db, 10000)).rejects.toThrow('não foi hidratado');
+  });
+
+  it('define o orçamento do carrinho ativo (RF-34)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    const listId = useCartStore.getState().activeList?.id as number;
+
+    await useCartStore.getState().setBudget(db, 10000);
+
+    expect(useCartStore.getState().activeList?.budget).toBe(10000);
+    const row = await db.getFirstAsync<{ budget: number | null }>(
+      'SELECT * FROM shopping_lists WHERE id = ?',
+      listId,
+    );
+    expect(row?.budget).toBe(10000);
+  });
+
+  it('remove o orçamento ao definir null', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+    await useCartStore.getState().setBudget(db, 10000);
+
+    await useCartStore.getState().setBudget(db, null);
+
+    expect(useCartStore.getState().activeList?.budget).toBeNull();
+  });
+
+  it('rejeita orçamento inválido (zero ou negativo)', async () => {
+    const db = createInMemoryDatabase();
+    await useCartStore.getState().hydrate(db);
+
+    await expect(useCartStore.getState().setBudget(db, 0)).rejects.toThrow();
+    await expect(useCartStore.getState().setBudget(db, -100)).rejects.toThrow();
+  });
+});
+
 describe('useCartStore.reopenFromHistory', () => {
   it('duplica os itens da compra num carrinho novo, mantendo o original intacto (RF-43)', async () => {
     const db = createInMemoryDatabase();

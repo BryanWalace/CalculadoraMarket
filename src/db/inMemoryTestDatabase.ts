@@ -68,6 +68,14 @@ export function createInMemoryDatabase(): AppDatabase {
         }
         return { lastInsertRowId: 0, changes: row ? 1 : 0 };
       }
+      if (sql.includes('UPDATE shopping_lists SET budget')) {
+        const [budget, id] = params as [number | null, number];
+        const list = lists.get(id);
+        if (list) {
+          Object.assign(list, { budget });
+        }
+        return { lastInsertRowId: 0, changes: list ? 1 : 0 };
+      }
       if (sql.includes('UPDATE shopping_lists')) {
         const [name, store, finishedAt, subqueryListId, whereListId] = params as [
           string,

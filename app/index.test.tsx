@@ -139,4 +139,41 @@ describe('CartScreen', () => {
       'Mercado Bom Preço',
     );
   });
+
+  it('mostra "Definir orçamento" quando não há orçamento definido (RF-34)', async () => {
+    useCartStore.setState({ isHydrated: true, activeList: ACTIVE_LIST, items: [] });
+
+    const { getByText } = await render(<CartScreen />);
+
+    expect(getByText('Definir orçamento')).toBeTruthy();
+  });
+
+  it('mostra o valor do orçamento quando já definido (RF-34)', async () => {
+    useCartStore.setState({
+      isHydrated: true,
+      activeList: { ...ACTIVE_LIST, budget: 10000 },
+      items: [],
+    });
+
+    const { getByText } = await render(<CartScreen />);
+
+    expect(getByText('Orçamento: R$ 100,00')).toBeTruthy();
+  });
+
+  it('abre o diálogo de orçamento e chama setBudget ao salvar (RF-34)', async () => {
+    const setBudget = jest.fn().mockResolvedValue(undefined);
+    useCartStore.setState({
+      isHydrated: true,
+      activeList: ACTIVE_LIST,
+      items: [],
+      setBudget,
+    });
+
+    const { getByLabelText } = await render(<CartScreen />);
+    await fireEvent.press(getByLabelText('Definir orçamento'));
+    await fireEvent.changeText(getByLabelText('Orçamento'), '15000');
+    await fireEvent.press(getByLabelText('Salvar orçamento'));
+
+    expect(setBudget).toHaveBeenCalledWith({}, 15000);
+  });
 });

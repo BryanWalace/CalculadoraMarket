@@ -78,7 +78,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 
 ## Etapa 5 — Orçamento, tema escuro e polimento
 
-- [ ] **T-55** — Definir orçamento opcional por carrinho. _(RF-34)_
+- [x] **T-55** — Definir orçamento opcional por carrinho. _(RF-34)_
 - [ ] **T-56** — Barra de progresso do total em relação ao orçamento. _(RF-35)_
 - [ ] **T-57** — Mudar a cor do total ao ultrapassar o orçamento. _(RF-36)_
 - [ ] **T-58** — Feedback tátil (`expo-haptics`) ao adicionar item e ao ultrapassar o orçamento. _(RF-59)_

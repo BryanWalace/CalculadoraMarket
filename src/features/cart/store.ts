@@ -12,12 +12,17 @@ import {
   finalizeList as finalizeListQuery,
   getActiveList,
   getListWithItems,
+  setBudget as setBudgetQuery,
 } from '../../db/listsQueries';
 import type { ListItem, ShoppingList } from '../../db/schema';
 import type { AppDatabase } from '../../db/types';
 import { sumCents } from '../../lib/money';
 import { deletePhotoIfExists } from '../../lib/photoStorage';
-import { listItemInputSchema, type ListItemInput } from '../../lib/validation';
+import {
+  listItemInputSchema,
+  shoppingListInputSchema,
+  type ListItemInput,
+} from '../../lib/validation';
 
 /**
  * Nome interno do carrinho antes de ser finalizado — nunca aparece para o
@@ -58,6 +63,8 @@ export interface CartState {
   clearList: (db: AppDatabase) => Promise<void>;
   /** Bloqueia carrinho vazio (RF-40); esvazia para uma compra nova ao terminar (RF-39). */
   finalizeList: (db: AppDatabase, name: string, store: string | null) => Promise<void>;
+  /** Orçamento opcional do carrinho atual, em centavos; `null` remove o orçamento (RF-34). */
+  setBudget: (db: AppDatabase, budgetCents: number | null) => Promise<void>;
   /** Duplica os itens de uma compra do histórico num carrinho novo (RF-43). */
   reopenFromHistory: (db: AppDatabase, historicalListId: number) => Promise<void>;
 }
@@ -189,6 +196,16 @@ export const useCartStore = create<CartState>((set, get) => ({
     await finalizeListQuery(db, activeList.id, name, store);
     const newList = await createList(db, DRAFT_LIST_NAME);
     set({ activeList: newList, items: [] });
+  },
+
+  setBudget: async (db, budgetCents) => {
+    const { activeList } = get();
+    if (!activeList) {
+      throw new Error('O carrinho ainda não foi hidratado');
+    }
+    const validBudget = shoppingListInputSchema.shape.budget.parse(budgetCents);
+    await setBudgetQuery(db, activeList.id, validBudget ?? null);
+    set({ activeList: { ...activeList, budget: validBudget ?? null } });
   },
 
   reopenFromHistory: async (db, historicalListId) => {

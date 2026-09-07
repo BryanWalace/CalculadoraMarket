@@ -3,6 +3,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { BudgetDialog } from '../src/features/cart/components/BudgetDialog';
 import { EmptyState } from '../src/features/cart/components/EmptyState';
 import { FinalizeDialog } from '../src/features/cart/components/FinalizeDialog';
 import { ItemCard } from '../src/features/cart/components/ItemCard';
@@ -19,6 +20,7 @@ export default function CartScreen() {
   const db = useSQLiteContext();
   const isHydrated = useCartStore((state) => state.isHydrated);
   const items = useCartStore((state) => state.items);
+  const activeList = useCartStore((state) => state.activeList);
   const hydrate = useCartStore((state) => state.hydrate);
   const adjustQuantity = useCartStore((state) => state.adjustQuantity);
   const scheduleRemoval = useCartStore((state) => state.scheduleRemoval);
@@ -26,10 +28,12 @@ export default function CartScreen() {
   const pendingDeletion = useCartStore((state) => state.pendingDeletion);
   const clearList = useCartStore((state) => state.clearList);
   const finalizeList = useCartStore((state) => state.finalizeList);
+  const setBudget = useCartStore((state) => state.setBudget);
   const totalCents = useCartStore(selectTotalCents);
   const itemCount = useCartStore(selectItemCount);
   const unitSum = useCartStore(selectUnitSum);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
 
   useEffect(() => {
     hydrate(db);
@@ -45,6 +49,11 @@ export default function CartScreen() {
   async function handleFinalizeConfirm(input: { name: string; store: string | null }) {
     await finalizeList(db, input.name, input.store);
     setIsFinalizing(false);
+  }
+
+  async function handleBudgetConfirm(budgetCents: number | null) {
+    await setBudget(db, budgetCents);
+    setIsEditingBudget(false);
   }
 
   if (!isHydrated) {
@@ -107,6 +116,18 @@ export default function CartScreen() {
           {formatCurrencyBRL(totalCents)}
         </Text>
         <Text>{formatCartSummary(itemCount, unitSum)}</Text>
+        <Pressable
+          onPress={() => setIsEditingBudget(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Definir orçamento"
+          style={styles.budgetButton}
+        >
+          <Text style={styles.budgetButtonText}>
+            {activeList?.budget != null
+              ? `Orçamento: ${formatCurrencyBRL(activeList.budget)}`
+              : 'Definir orçamento'}
+          </Text>
+        </Pressable>
       </View>
 
       <Pressable
@@ -124,6 +145,18 @@ export default function CartScreen() {
         onRequestClose={() => setIsFinalizing(false)}
       >
         <FinalizeDialog onConfirm={handleFinalizeConfirm} onCancel={() => setIsFinalizing(false)} />
+      </Modal>
+
+      <Modal
+        visible={isEditingBudget}
+        animationType="slide"
+        onRequestClose={() => setIsEditingBudget(false)}
+      >
+        <BudgetDialog
+          currentBudgetCents={activeList?.budget ?? null}
+          onConfirm={handleBudgetConfirm}
+          onCancel={() => setIsEditingBudget(false)}
+        />
       </Modal>
     </View>
   );
@@ -168,6 +201,15 @@ const styles = StyleSheet.create({
   total: {
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  budgetButton: {
+    marginTop: 8,
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  budgetButtonText: {
+    textDecorationLine: 'underline',
   },
   fab: {
     position: 'absolute',
