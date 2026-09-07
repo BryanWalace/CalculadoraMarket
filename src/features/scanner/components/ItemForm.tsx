@@ -51,7 +51,19 @@ export function ItemForm({ initialValues, onSubmit, onCancel, notice }: ItemForm
     setValues((previous) => ({ ...previous, unitPriceCents: cents }));
   }
 
+  /**
+   * Para 'un', só a sequência de dígitos no início do texto é aceita — o
+   * restante é descartado ao digitar, nunca concatenado (RF-09). Para 'kg',
+   * aceita um separador decimal (vírgula ou ponto).
+   */
   function handleQuantityChange(text: string) {
+    if (values.unit === 'un') {
+      const digitsOnly = text.match(/^\d*/)?.[0] ?? '';
+      const parsed = digitsOnly === '' ? 0 : parseInt(digitsOnly, 10);
+      setValues((previous) => ({ ...previous, quantity: parsed }));
+      return;
+    }
+
     const normalized = text.replace(',', '.').replace(/[^0-9.]/g, '');
     const parsed = parseFloat(normalized);
     setValues((previous) => ({ ...previous, quantity: Number.isNaN(parsed) ? 0 : parsed }));

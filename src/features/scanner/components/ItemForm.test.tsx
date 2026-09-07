@@ -63,6 +63,14 @@ describe('ItemForm', () => {
     });
   });
 
+  it('ignora vírgula/decimal digitado quando a unidade é un (RF-09)', async () => {
+    const { getByLabelText } = await render(<ItemForm onSubmit={jest.fn()} onCancel={jest.fn()} />);
+
+    await fireEvent.changeText(getByLabelText('Quantidade'), '2,5');
+
+    expect(getByLabelText('Quantidade').props.value).toBe('2');
+  });
+
   it('arredonda a quantidade ao voltar de kg para un, evitando decimal inválido', async () => {
     const { getByLabelText } = await render(
       <ItemForm
