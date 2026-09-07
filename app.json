@@ -17,11 +17,28 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "blockedPermissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-sqlite", "expo-asset", "expo-sharing"]
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-asset",
+      "expo-sharing",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O Carrinho usa a câmera só para fotografar a etiqueta de preço e ler o texto direto no aparelho. Nenhuma foto sai do celular.",
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
   }
 }
