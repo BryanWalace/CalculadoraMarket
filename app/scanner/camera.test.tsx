@@ -4,20 +4,34 @@ import CameraScreen from './camera';
 
 const mockRequestPermission = jest.fn();
 const mockPush = jest.fn();
+const mockCaptureAndCropPhoto = jest.fn();
 let mockPermission: { granted: boolean; canAskAgain: boolean } | null = null;
 
-jest.mock('expo-camera', () => ({
-  useCameraPermissions: () => [mockPermission, mockRequestPermission],
-  CameraView: jest.requireActual('react-native').View,
-}));
+jest.mock('expo-camera', () => {
+  const React = jest.requireActual('react');
+  const { View } = jest.requireActual('react-native');
+  function MockCameraView(props: object, ref: unknown) {
+    return React.createElement(View, { ...props, ref });
+  }
+  MockCameraView.displayName = 'MockCameraView';
+  return {
+    useCameraPermissions: () => [mockPermission, mockRequestPermission],
+    CameraView: React.forwardRef(MockCameraView),
+  };
+});
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
 }));
 
+jest.mock('../../src/features/scanner/capturePhoto', () => ({
+  captureAndCropPhoto: (...args: unknown[]) => mockCaptureAndCropPhoto(...args),
+}));
+
 beforeEach(() => {
   mockRequestPermission.mockClear();
   mockPush.mockClear();
+  mockCaptureAndCropPhoto.mockReset();
   mockPermission = null;
 });
 
@@ -78,5 +92,50 @@ describe('CameraScreen', () => {
     await fireEvent.press(getByLabelText('Adicionar manualmente'));
 
     expect(mockPush).toHaveBeenCalledWith('/scanner/confirm');
+  });
+
+  it('o botão de fotografar fica desabilitado até a moldura ser medida', async () => {
+    mockPermission = { granted: true, canAskAgain: true };
+
+    const { getByLabelText } = await render(<CameraScreen />);
+
+    expect(getByLabelText('Fotografar etiqueta').props.accessibilityState.disabled).toBe(true);
+  });
+
+  it('fotografar captura, recorta e navega para a confirmação com o photoUri (RF-15)', async () => {
+    mockPermission = { granted: true, canAskAgain: true };
+    mockCaptureAndCropPhoto.mockResolvedValue('file:///document/etiqueta-123.jpg');
+
+    const { getByLabelText } = await render(<CameraScreen />);
+
+    await fireEvent(getByLabelText('Moldura de enquadramento do preço'), 'layout', {
+      nativeEvent: { layout: { x: 40, y: 300, width: 320, height: 120 } },
+    });
+    await fireEvent.press(getByLabelText('Fotografar etiqueta'));
+
+    expect(mockCaptureAndCropPhoto).toHaveBeenCalledWith(
+      expect.anything(),
+      { x: 40, y: 300, width: 320, height: 120 },
+      expect.objectContaining({ width: expect.any(Number), height: expect.any(Number) }),
+    );
+    expect(mockPush).toHaveBeenCalledWith(
+      `/scanner/confirm?photoUri=${encodeURIComponent('file:///document/etiqueta-123.jpg')}`,
+    );
+  });
+
+  it('mostra um aviso amigável se a captura falhar, sem derrubar o app', async () => {
+    mockPermission = { granted: true, canAskAgain: true };
+    mockCaptureAndCropPhoto.mockRejectedValue(new Error('falha nativa qualquer'));
+    const { Alert } = jest.requireActual('react-native');
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+    const { getByLabelText } = await render(<CameraScreen />);
+    await fireEvent(getByLabelText('Moldura de enquadramento do preço'), 'layout', {
+      nativeEvent: { layout: { x: 40, y: 300, width: 320, height: 120 } },
+    });
+    await fireEvent.press(getByLabelText('Fotografar etiqueta'));
+
+    expect(alertSpy).toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

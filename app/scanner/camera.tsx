@@ -1,17 +1,51 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { captureAndCropPhoto } from '../../src/features/scanner/capturePhoto';
 import { CaptureGuideOverlay } from '../../src/features/scanner/components/CaptureGuideOverlay';
+import type { FrameBounds } from '../../src/lib/cropRegion';
 
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
+  const [frameBounds, setFrameBounds] = useState<FrameBounds | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  async function handleCapture() {
+    if (!frameBounds || isCapturing) {
+      return;
+    }
+    setIsCapturing(true);
+    try {
+      const screen = Dimensions.get('window');
+      const photoUri = await captureAndCropPhoto(cameraRef, frameBounds, screen);
+      router.push(`/scanner/confirm?photoUri=${encodeURIComponent(photoUri)}`);
+    } catch {
+      Alert.alert(
+        'Não foi possível fotografar',
+        'Tente novamente ou preencha os dados manualmente.',
+      );
+    } finally {
+      setIsCapturing(false);
+    }
+  }
 
   if (permission?.granted) {
     return (
-      <View style={styles.container}>
-        <CameraView style={StyleSheet.absoluteFill} facing="back" />
-        <CaptureGuideOverlay />
+      <View style={styles.cameraContainer}>
+        <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
+        <CaptureGuideOverlay onFrameLayout={setFrameBounds} />
+        <Pressable
+          onPress={handleCapture}
+          disabled={!frameBounds || isCapturing}
+          accessibilityRole="button"
+          accessibilityLabel="Fotografar etiqueta"
+          style={styles.shutter}
+        >
+          <View style={styles.shutterInner} />
+        </Pressable>
       </View>
     );
   }
@@ -72,6 +106,9 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 16,
   },
+  cameraContainer: {
+    flex: 1,
+  },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -89,5 +126,23 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     fontWeight: 'bold',
+  },
+  shutter: {
+    position: 'absolute',
+    bottom: 48,
+    alignSelf: 'center',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 4,
+    borderColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shutterInner: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#ffffff',
   },
 });

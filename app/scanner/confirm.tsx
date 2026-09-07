@@ -6,7 +6,7 @@ import { ItemForm } from '../../src/features/scanner/components/ItemForm';
 
 export default function ConfirmationScreen() {
   const db = useSQLiteContext();
-  const { itemId } = useLocalSearchParams<{ itemId?: string }>();
+  const { itemId, photoUri } = useLocalSearchParams<{ itemId?: string; photoUri?: string }>();
   const addItem = useCartStore((state) => state.addItem);
   const updateItem = useCartStore((state) => state.updateItem);
   const items = useCartStore((state) => state.items);
@@ -29,7 +29,7 @@ export default function ConfirmationScreen() {
         if (editingItem) {
           await updateItem(db, editingItem.id, input);
         } else {
-          await addItem(db, input, null);
+          await addItem(db, input, photoUri ?? null);
         }
         router.back();
       }}

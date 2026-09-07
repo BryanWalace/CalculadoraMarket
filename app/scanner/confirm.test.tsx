@@ -5,7 +5,7 @@ import { useCartStore } from '../../src/features/cart/store';
 import ConfirmationScreen from './confirm';
 
 const mockBack = jest.fn();
-let mockSearchParams: { itemId?: string } = {};
+let mockSearchParams: { itemId?: string; photoUri?: string } = {};
 
 jest.mock('expo-router', () => ({
   router: { back: () => mockBack() },
@@ -71,6 +71,21 @@ describe('ConfirmationScreen', () => {
       expect.objectContaining({ name: 'Arroz' }),
     );
     expect(useCartStore.getState().addItem).not.toHaveBeenCalled();
+  });
+
+  it('encaminha o photoUri da câmera para addItem quando presente (RF-55)', async () => {
+    mockSearchParams = { photoUri: 'file:///document/etiqueta-123.jpg' };
+
+    const { getByLabelText } = await render(<ConfirmationScreen />);
+    await fireEvent.changeText(getByLabelText('Nome do produto'), 'Feijão');
+    await fireEvent.changeText(getByLabelText('Preço unitário'), '899');
+    await fireEvent.press(getByLabelText('Adicionar'));
+
+    expect(useCartStore.getState().addItem).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ name: 'Feijão' }),
+      'file:///document/etiqueta-123.jpg',
+    );
   });
 
   it('cancelar volta para a tela anterior sem gravar nada', async () => {

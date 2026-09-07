@@ -1,15 +1,32 @@
+import type { LayoutChangeEvent } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
+
+import type { FrameBounds } from '../../../lib/cropRegion';
+
+interface CaptureGuideOverlayProps {
+  /** Reporta a posição/tamanho medidos da moldura, em coordenadas de tela (RF-15). */
+  onFrameLayout?: (bounds: FrameBounds) => void;
+}
 
 /**
  * Moldura visual indicando onde o usuário deve posicionar o preço da
  * etiqueta antes de fotografar (RF-14). A foto é recortada para esta mesma
- * área antes do OCR (RF-15, ver T-29).
+ * área antes do OCR (RF-15).
  */
-export function CaptureGuideOverlay() {
+export function CaptureGuideOverlay({ onFrameLayout }: CaptureGuideOverlayProps) {
+  function handleLayout(event: LayoutChangeEvent) {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    onFrameLayout?.({ x, y, width, height });
+  }
+
   return (
     <View style={styles.overlay} pointerEvents="none">
       <Text style={styles.hint}>Posicione o preço dentro da moldura</Text>
-      <View style={styles.frame} accessibilityLabel="Moldura de enquadramento do preço" />
+      <View
+        style={styles.frame}
+        onLayout={handleLayout}
+        accessibilityLabel="Moldura de enquadramento do preço"
+      />
     </View>
   );
 }
