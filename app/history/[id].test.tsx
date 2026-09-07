@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 import type { ListItem, ShoppingList } from '../../src/db/schema';
 import { useCartStore } from '../../src/features/cart/store';
@@ -50,7 +51,13 @@ beforeEach(() => {
   mockGetListWithItems.mockReset();
   mockPush.mockClear();
   mockSearchParams = { id: '1' };
-  useCartStore.setState({ reopenFromHistory: jest.fn().mockResolvedValue(undefined) });
+  useCartStore.setState({
+    activeList: null,
+    items: [],
+    reopenFromHistory: jest.fn().mockResolvedValue(undefined),
+    clearList: jest.fn().mockResolvedValue(undefined),
+    finalizeList: jest.fn().mockResolvedValue(undefined),
+  });
 });
 
 describe('HistoryDetailScreen', () => {
@@ -87,6 +94,64 @@ describe('HistoryDetailScreen', () => {
     await fireEvent.press(getByLabelText('Reabrir como carrinho novo'));
 
     expect(useCartStore.getState().reopenFromHistory).toHaveBeenCalledWith({}, 1);
+    expect(mockPush).toHaveBeenCalledWith('/');
+  });
+
+  it('avisa e pede confirmação quando já há um carrinho ativo com itens (RF-44)', async () => {
+    mockGetListWithItems.mockResolvedValue({ list: LIST, items: [makeItem({})] });
+    useCartStore.setState({
+      activeList: { ...LIST, id: 99, finishedAt: null },
+      items: [makeItem({ id: 50, name: 'Item do carrinho ativo' })],
+    });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+    const { getByLabelText } = await render(<HistoryDetailScreen />);
+    await waitFor(() => getByLabelText('Reabrir como carrinho novo'));
+    await fireEvent.press(getByLabelText('Reabrir como carrinho novo'));
+
+    expect(alertSpy).toHaveBeenCalled();
+    expect(useCartStore.getState().reopenFromHistory).not.toHaveBeenCalled();
+  });
+
+  it('"descartar carrinho atual" limpa o carrinho ativo e depois reabre (RF-44)', async () => {
+    mockGetListWithItems.mockResolvedValue({ list: LIST, items: [makeItem({})] });
+    useCartStore.setState({
+      activeList: { ...LIST, id: 99, finishedAt: null },
+      items: [makeItem({ id: 50 })],
+    });
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      buttons?.find((button) => button.text === 'Descartar carrinho atual')?.onPress?.();
+    });
+
+    const { getByLabelText } = await render(<HistoryDetailScreen />);
+    await waitFor(() => getByLabelText('Reabrir como carrinho novo'));
+    await fireEvent.press(getByLabelText('Reabrir como carrinho novo'));
+
+    expect(useCartStore.getState().clearList).toHaveBeenCalled();
+    await waitFor(() => expect(useCartStore.getState().reopenFromHistory).toHaveBeenCalled());
+    expect(mockPush).toHaveBeenCalledWith('/');
+  });
+
+  it('"finalizar carrinho atual" finaliza com nome padrão e depois reabre (RF-44)', async () => {
+    mockGetListWithItems.mockResolvedValue({ list: LIST, items: [makeItem({})] });
+    useCartStore.setState({
+      activeList: { ...LIST, id: 99, finishedAt: null },
+      items: [makeItem({ id: 50 })],
+    });
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      buttons?.find((button) => button.text === 'Finalizar carrinho atual')?.onPress?.();
+    });
+
+    const { getByLabelText } = await render(<HistoryDetailScreen />);
+    await waitFor(() => getByLabelText('Reabrir como carrinho novo'));
+    await fireEvent.press(getByLabelText('Reabrir como carrinho novo'));
+
+    expect(useCartStore.getState().finalizeList).toHaveBeenCalledWith(
+      {},
+      expect.stringContaining('Compra de'),
+      null,
+    );
+    await waitFor(() => expect(useCartStore.getState().reopenFromHistory).toHaveBeenCalled());
     expect(mockPush).toHaveBeenCalledWith('/');
   });
 

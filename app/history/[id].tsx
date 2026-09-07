@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getListWithItems } from '../../src/db/listsQueries';
 import type { ListItem, ShoppingList } from '../../src/db/schema';
@@ -20,9 +20,43 @@ export default function HistoryDetailScreen() {
     getListWithItems(db, Number(id)).then(setData);
   }, [db, id]);
 
-  async function handleReopen() {
+  async function performReopen() {
     await reopenFromHistory(db, Number(id));
     router.push('/');
+  }
+
+  async function discardActiveAndReopen() {
+    await useCartStore.getState().clearList(db);
+    await performReopen();
+  }
+
+  async function finalizeActiveAndReopen() {
+    const fallbackName = `Compra de ${formatDate(new Date().toISOString())}`;
+    await useCartStore.getState().finalizeList(db, fallbackName, null);
+    await performReopen();
+  }
+
+  // RF-44: nunca substitui um carrinho ativo em silêncio.
+  function handleReopen() {
+    const { activeList, items } = useCartStore.getState();
+    if (!activeList || items.length === 0) {
+      void performReopen();
+      return;
+    }
+
+    Alert.alert(
+      'Carrinho em andamento',
+      'Você já tem um carrinho em andamento. Finalize ou descarte antes de reabrir esta compra.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Descartar carrinho atual',
+          style: 'destructive',
+          onPress: () => void discardActiveAndReopen(),
+        },
+        { text: 'Finalizar carrinho atual', onPress: () => void finalizeActiveAndReopen() },
+      ],
+    );
   }
 
   if (data === undefined) {
