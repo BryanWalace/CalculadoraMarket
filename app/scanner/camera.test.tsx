@@ -4,7 +4,7 @@ import CameraScreen from './camera';
 
 const mockRequestPermission = jest.fn();
 const mockPush = jest.fn();
-const mockCaptureAndCropPhoto = jest.fn();
+const mockScanLabel = jest.fn();
 let mockPermission: { granted: boolean; canAskAgain: boolean } | null = null;
 
 jest.mock('expo-camera', () => {
@@ -24,14 +24,18 @@ jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
 }));
 
-jest.mock('../../src/features/scanner/capturePhoto', () => ({
-  captureAndCropPhoto: (...args: unknown[]) => mockCaptureAndCropPhoto(...args),
-}));
+jest.mock('../../src/features/scanner/scanLabel', () => {
+  const actual = jest.requireActual('../../src/features/scanner/scanLabel');
+  return {
+    ...actual,
+    scanLabel: (...args: unknown[]) => mockScanLabel(...args),
+  };
+});
 
 beforeEach(() => {
   mockRequestPermission.mockClear();
   mockPush.mockClear();
-  mockCaptureAndCropPhoto.mockReset();
+  mockScanLabel.mockReset();
   mockPermission = null;
 });
 
@@ -102,9 +106,12 @@ describe('CameraScreen', () => {
     expect(getByLabelText('Fotografar etiqueta').props.accessibilityState.disabled).toBe(true);
   });
 
-  it('fotografar captura, recorta e navega para a confirmação com o photoUri (RF-15)', async () => {
+  it('fotografar escaneia e navega para a confirmação com photoUri, nome, preço e unidade (RF-15, RF-23)', async () => {
     mockPermission = { granted: true, canAskAgain: true };
-    mockCaptureAndCropPhoto.mockResolvedValue('file:///document/etiqueta-123.jpg');
+    mockScanLabel.mockResolvedValue({
+      photoUri: 'file:///document/etiqueta-123.jpg',
+      parsed: { name: 'Arroz Tipo 1', priceCents: 2290, unit: 'un', confident: true },
+    });
 
     const { getByLabelText } = await render(<CameraScreen />);
 
@@ -113,19 +120,21 @@ describe('CameraScreen', () => {
     });
     await fireEvent.press(getByLabelText('Fotografar etiqueta'));
 
-    expect(mockCaptureAndCropPhoto).toHaveBeenCalledWith(
+    expect(mockScanLabel).toHaveBeenCalledWith(
       expect.anything(),
       { x: 40, y: 300, width: 320, height: 120 },
       expect.objectContaining({ width: expect.any(Number), height: expect.any(Number) }),
     );
-    expect(mockPush).toHaveBeenCalledWith(
-      `/scanner/confirm?photoUri=${encodeURIComponent('file:///document/etiqueta-123.jpg')}`,
-    );
+    const pushedUrl = mockPush.mock.calls[0][0] as string;
+    expect(pushedUrl).toContain('photoUri=file%3A%2F%2F%2Fdocument%2Fetiqueta-123.jpg');
+    expect(pushedUrl).toContain('name=Arroz%20Tipo%201');
+    expect(pushedUrl).toContain('priceCents=2290');
+    expect(pushedUrl).toContain('unit=un');
   });
 
-  it('mostra um aviso amigável se a captura falhar, sem derrubar o app', async () => {
+  it('mostra um aviso amigável se a captura/OCR falhar, sem derrubar o app', async () => {
     mockPermission = { granted: true, canAskAgain: true };
-    mockCaptureAndCropPhoto.mockRejectedValue(new Error('falha nativa qualquer'));
+    mockScanLabel.mockRejectedValue(new Error('falha nativa qualquer'));
     const { Alert } = jest.requireActual('react-native');
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 

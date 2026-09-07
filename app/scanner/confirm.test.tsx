@@ -5,7 +5,13 @@ import { useCartStore } from '../../src/features/cart/store';
 import ConfirmationScreen from './confirm';
 
 const mockBack = jest.fn();
-let mockSearchParams: { itemId?: string; photoUri?: string } = {};
+let mockSearchParams: {
+  itemId?: string;
+  photoUri?: string;
+  name?: string;
+  priceCents?: string;
+  unit?: string;
+} = {};
 
 jest.mock('expo-router', () => ({
   router: { back: () => mockBack() },
@@ -86,6 +92,32 @@ describe('ConfirmationScreen', () => {
       expect.objectContaining({ name: 'Feijão' }),
       'file:///document/etiqueta-123.jpg',
     );
+  });
+
+  it('pré-preenche nome, preço e unidade reconhecidos pelo OCR (RF-23)', async () => {
+    mockSearchParams = {
+      photoUri: 'file:///document/etiqueta-123.jpg',
+      name: 'Alcatra Bovina',
+      priceCents: '3990',
+      unit: 'kg',
+    };
+
+    const { getByLabelText } = await render(<ConfirmationScreen />);
+
+    expect(getByLabelText('Nome do produto').props.value).toBe('Alcatra Bovina');
+    expect(getByLabelText('Preço unitário').props.value).toBe('R$ 39,90');
+    // Quantidade formatada com 3 casas decimais confirma que a unidade
+    // inicial já é 'kg' (formatQuantity só faz isso para peso).
+    expect(getByLabelText('Quantidade').props.value).toBe('1,000');
+  });
+
+  it('pré-preenche só os campos que o OCR reconheceu, deixando o resto em branco (RF-24)', async () => {
+    mockSearchParams = { photoUri: 'file:///document/etiqueta-123.jpg', priceCents: '2490' };
+
+    const { getByLabelText } = await render(<ConfirmationScreen />);
+
+    expect(getByLabelText('Nome do produto').props.value).toBe('');
+    expect(getByLabelText('Preço unitário').props.value).toBe('R$ 24,90');
   });
 
   it('cancelar volta para a tela anterior sem gravar nada', async () => {

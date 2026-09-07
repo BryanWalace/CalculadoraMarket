@@ -36,3 +36,29 @@ export async function scanLabel(
 
   return { photoUri, parsed: parseLabel(blocks) };
 }
+
+/**
+ * Monta a query string de navegação para a tela de confirmação a partir do
+ * resultado do escaneamento — só inclui os campos que o OCR realmente
+ * reconheceu (RF-23/24); o que faltar, a tela de confirmação deixa em
+ * branco para preenchimento manual.
+ */
+export function buildConfirmRouteQuery(scanResult: ScanResult): string {
+  const { photoUri, parsed } = scanResult;
+  const params: Record<string, string> = { photoUri };
+
+  if (parsed.name !== null) {
+    params.name = parsed.name;
+  }
+  if (parsed.priceCents !== null) {
+    params.priceCents = String(parsed.priceCents);
+  }
+  params.unit = parsed.unit;
+  if (!parsed.confident) {
+    params.lowConfidence = '1';
+  }
+
+  return Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+}

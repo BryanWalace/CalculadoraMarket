@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { captureAndCropPhoto } from '../../src/features/scanner/capturePhoto';
+import { buildConfirmRouteQuery, scanLabel } from '../../src/features/scanner/scanLabel';
 import { CaptureGuideOverlay } from '../../src/features/scanner/components/CaptureGuideOverlay';
 import type { FrameBounds } from '../../src/lib/cropRegion';
 
@@ -20,8 +20,8 @@ export default function CameraScreen() {
     setIsCapturing(true);
     try {
       const screen = Dimensions.get('window');
-      const photoUri = await captureAndCropPhoto(cameraRef, frameBounds, screen);
-      router.push(`/scanner/confirm?photoUri=${encodeURIComponent(photoUri)}`);
+      const scanResult = await scanLabel(cameraRef, frameBounds, screen);
+      router.push(`/scanner/confirm?${buildConfirmRouteQuery(scanResult)}`);
     } catch {
       Alert.alert(
         'Não foi possível fotografar',
