@@ -21,7 +21,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-07** — Criar rotas placeholder navegáveis entre si sem funcionalidade: `app/index.tsx`, `app/scanner/camera.tsx`, `app/scanner/confirm.tsx`, `app/history/index.tsx`, `app/history/[id].tsx`, `app/privacy.tsx`.
 - [x] **T-08** — Criar schema SQLite inicial (`src/db/schema.ts`) com `shopping_lists` e `list_items`. _(plan.md §3)_
 - [x] **T-09** — Criar `src/db/migrations.ts` com versionamento via `PRAGMA user_version` e a migração inicial. _(plan.md ADR-04)_
-- [ ] **T-10** — Criar `src/db/client.ts` (abre conexão) e conectar ao app na inicialização.
+- [x] **T-10** — Criar `src/db/client.tsx` (abre conexão) e conectar ao app na inicialização.
 
 ## Etapa 2 — CRUD manual da lista com total funcionando
 
