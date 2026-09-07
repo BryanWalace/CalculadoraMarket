@@ -138,3 +138,76 @@ describe('parseLabel — extração do nome (RF-20, RF-21)', () => {
     expect(result.name).toBeNull();
   });
 });
+
+describe('parseLabel — detecção de unidade kg (RF-22)', () => {
+  it('detecta "kg" e marca a unidade como peso', () => {
+    const result = parseLabel([
+      { text: 'Picanha Bovina', boundingBoxHeight: 30 },
+      { text: 'R$ 49,90/kg', boundingBoxHeight: 40 },
+    ]);
+    expect(result.unit).toBe('kg');
+  });
+
+  it('detecta "Kg" e "KG" em qualquer capitalização', () => {
+    expect(parseLabel([{ text: 'R$ 10,00 Kg', boundingBoxHeight: 40 }]).unit).toBe('kg');
+    expect(parseLabel([{ text: 'R$ 10,00 KG', boundingBoxHeight: 40 }]).unit).toBe('kg');
+  });
+
+  it('detecta kg mesmo numa linha só de gramatura (ex.: "0,500 KG")', () => {
+    const result = parseLabel([
+      { text: '0,500 KG', boundingBoxHeight: 40 },
+      { text: 'R$ 15,90', boundingBoxHeight: 50 },
+    ]);
+    expect(result.unit).toBe('kg');
+  });
+
+  it('assume "un" quando não há nenhuma menção a kg', () => {
+    const result = parseLabel([
+      { text: 'Refrigerante 2L', boundingBoxHeight: 30 },
+      { text: 'R$ 8,99', boundingBoxHeight: 40 },
+    ]);
+    expect(result.unit).toBe('un');
+  });
+
+  it('assume "un" para lista de blocos vazia', () => {
+    expect(parseLabel([]).unit).toBe('un');
+  });
+});
+
+describe('parseLabel — confiança do reconhecimento (RF-25)', () => {
+  it('confident é true quando encontra preço e nome', () => {
+    const result = parseLabel([
+      { text: 'Arroz Branco', boundingBoxHeight: 30 },
+      { text: 'R$ 24,90', boundingBoxHeight: 40 },
+    ]);
+    expect(result.confident).toBe(true);
+  });
+
+  it('confident é true na extração parcial: só preço (RF-24 não é falha)', () => {
+    const result = parseLabel([{ text: 'R$ 24,90', boundingBoxHeight: 40 }]);
+    expect(result.confident).toBe(true);
+    expect(result.priceCents).toBe(2490);
+    expect(result.name).toBeNull();
+  });
+
+  it('confident é true na extração parcial: só nome (RF-24 não é falha)', () => {
+    const result = parseLabel([{ text: 'Arroz Branco Tipo 1', boundingBoxHeight: 30 }]);
+    expect(result.confident).toBe(true);
+    expect(result.name).toBe('Arroz Branco Tipo 1');
+    expect(result.priceCents).toBeNull();
+  });
+
+  it('confident é false só quando nem preço nem nome são encontrados (RF-25)', () => {
+    const result = parseLabel([
+      { text: '7891234567895', boundingBoxHeight: 40 },
+      { text: 'OFERTA', boundingBoxHeight: 20 },
+    ]);
+    expect(result.confident).toBe(false);
+    expect(result.name).toBeNull();
+    expect(result.priceCents).toBeNull();
+  });
+
+  it('confident é false para lista de blocos vazia', () => {
+    expect(parseLabel([]).confident).toBe(false);
+  });
+});

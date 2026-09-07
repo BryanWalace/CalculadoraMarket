@@ -51,7 +51,7 @@ Organizado pela "Ordem de entrega" do pedido original: 5 etapas, cada uma entreg
 - [x] **T-31** — **TDD** `src/lib/ocr-parser.ts`: testes de seleção de preço por maior altura de bounding box, contra os formatos `R$ 12,34`, `12,34`, `1.234,56`, `12.34` e valor quebrado em linhas. _(RF-17, RF-18)_
 - [x] **T-32** — **TDD** `src/lib/ocr-parser.ts`: testes ignorando código de barras, CNPJ, data e gramatura/volume como candidatos a preço. _(RF-19)_
 - [x] **T-33** — **TDD** `src/lib/ocr-parser.ts`: testes de extração de nome (linha alfabética mais longa, exclusão de palavras de ruído) e Title Case. _(RF-20, RF-21)_
-- [ ] **T-34** — **TDD** `src/lib/ocr-parser.ts`: testes de detecção de unidade `kg` e do caso sem confiança (nem nome nem preço válidos). _(RF-22, RF-25)_
+- [x] **T-34** — **TDD** `src/lib/ocr-parser.ts`: testes de detecção de unidade `kg` e do caso sem confiança (nem nome nem preço válidos). _(RF-22, RF-25)_
 - [ ] **T-35** — Consolidar os testes de T-31 a T-34 em pelo menos 10 amostras reais de etiqueta, incluindo casos que devem falhar (cobertura obrigatória do pedido original).
 - [ ] **T-36** — `src/features/scanner/scanLabel.ts`: adaptador ML Kit → `OcrBlock[]` e orquestração câmera → recorte → OCR → parser. _(plan.md ADR-03)_
 - [ ] **T-37** — Integrar `scanLabel` à tela de confirmação: pré-preencher nome/preço/unidade/quantidade com o resultado do OCR. _(RF-23)_

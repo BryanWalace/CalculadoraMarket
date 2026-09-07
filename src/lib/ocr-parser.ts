@@ -153,6 +153,12 @@ function selectProductName(blocks: OcrBlock[]): string | null {
   return toTitleCase(longest);
 }
 
+/** RF-22: qualquer menção a "kg" na etiqueta marca a unidade como peso. */
+function detectUnit(blocks: OcrBlock[]): Unit {
+  const hasKg = blocks.some((block) => /kg/i.test(block.text));
+  return hasKg ? 'kg' : 'un';
+}
+
 export function parseLabel(blocks: OcrBlock[]): ParsedLabel {
   const priceCents = selectBestPrice(blocks);
   const name = selectProductName(blocks);
@@ -160,7 +166,9 @@ export function parseLabel(blocks: OcrBlock[]): ParsedLabel {
   return {
     name,
     priceCents,
-    unit: 'un',
-    confident: priceCents !== null,
+    unit: detectUnit(blocks),
+    // RF-25: só é falha quando nem preço nem nome sobraram. Extração
+    // parcial (só um dos dois) é sucesso normal, ver RF-24 e spec §3.
+    confident: priceCents !== null || name !== null,
   };
 }
